@@ -11,14 +11,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-
-    @Override
-    public void onClick(View view)
-    {
-        TextView textView = (TextView) findViewById(R.id.status_msg);
-        textView.setText("You clicked me!");
-    }
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +27,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();}});
 
-        Button btn = (Button) findViewById(R.id.btn_chart_data);
-        btn.setOnClickListener(this);
+        Button btn = (Button) findViewById(R.id.btn_t_disc_chart_data);
+        btn.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TextView textView = (TextView) findViewById(R.id.status_msg);
+                        textView.setText("You clicked me for T Disc data!");
+                    }
+                });
+
+        btn = (Button) findViewById(R.id.btn_c_disc_chart_data);
+        btn.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TextView textView = (TextView) findViewById(R.id.status_msg);
+                        textView.setText("You clicked me for C Disc data!");
+                    }
+                }
+        );
     }
 
     @Override
