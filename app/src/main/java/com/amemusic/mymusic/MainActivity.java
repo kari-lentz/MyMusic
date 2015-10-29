@@ -1,4 +1,4 @@
-package com.amemusic.myapplication;
+package com.amemusic.mymusic;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,6 +12,9 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;;
+
+import com.amemusic.mymusisc.R;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 

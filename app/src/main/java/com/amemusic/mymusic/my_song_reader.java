@@ -1,4 +1,4 @@
-package com.amemusic.myapplication;
+package com.amemusic.mymusic;
 
 import android.util.JsonReader;
 
