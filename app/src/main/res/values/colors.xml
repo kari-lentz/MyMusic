@@ -5,4 +5,5 @@
     <color name="colorAccent">#FF4081</color>
     <color name="BTN_TEXT_COLOR">#1111ff</color>
     <color name="LBL_TEXT_COLOR">#dd2222</color>
+    <color name="CONTROL_LABEL_COLOR">#005500</color>
 </resources>

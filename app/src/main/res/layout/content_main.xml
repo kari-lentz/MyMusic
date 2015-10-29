@@ -9,29 +9,40 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main" tools:context=".MainActivity">
 
-    <TextView android:text="This is my first app, you better like it!!" android:layout_width="wrap_content"
+    <TextView android:text="Ready" android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/status_msg"
+        android:id="@+id/txt_status"
         android:textColor="@color/LBL_TEXT_COLOR"
-        android:layout_below="@+id/btn_t_disc_chart_data"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="63dp" />
+        android:layout_above="@+id/lv_media"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="T Disc Chart Data"
-        android:id="@+id/btn_t_disc_chart_data"
+        android:text="Fetch Songs"
+        android:id="@+id/btn_fetch_media"
         android:textColor="@color/BTN_TEXT_COLOR"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="C DIsc Chart Data "
-        android:id="@+id/btn_c_disc_chart_data"
-        android:layout_below="@+id/btn_t_disc_chart_data"
-        android:layout_centerHorizontal="true"
-        android:textColor="@color/BTN_TEXT_COLOR" />
+        android:text="New Releases"
+        android:id="@+id/txt_title_media_list"
+        android:textColor="@color/CONTROL_LABEL_COLOR"
+        android:textSize="@dimen/CONTROL_LABEL_FONT_SIZE"
+        android:textStyle="bold"
+        android:layout_below="@+id/btn_fetch_media"
+        android:layout_centerHorizontal="true" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lv_media"
+        android:layout_below="@+id/txt_title_media_list"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>

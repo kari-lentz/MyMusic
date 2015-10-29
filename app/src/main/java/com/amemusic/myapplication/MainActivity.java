@@ -1,5 +1,6 @@
 package com.amemusic.myapplication;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,9 +10,23 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ListView;
+import android.widget.TextView;;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
+
+    private void run_view() {
+
+        ListView lv = (ListView) findViewById(R.id.lv_media);
+        TextView tv = (TextView) findViewById(R.id.txt_status);
+        try {
+            AsyncTask task = new url_getter(this, lv, tv).execute(new URL("http://tophitsdirect.com/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+        } catch (MalformedURLException e) {
+            tv.setText("Incomplete URL");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,26 +42,16 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();}});
 
-        Button btn = (Button) findViewById(R.id.btn_t_disc_chart_data);
+        Button btn = (Button) findViewById(R.id.btn_fetch_media);
         btn.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TextView textView = (TextView) findViewById(R.id.status_msg);
-                        textView.setText("You clicked me for T Disc data!");
-                    }
-                });
+                        TextView tv = (TextView) findViewById(R.id.txt_status);
+                        tv.setText("Loading ...");
+                        run_view();
+                        }});
 
-        btn = (Button) findViewById(R.id.btn_c_disc_chart_data);
-        btn.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        TextView textView = (TextView) findViewById(R.id.status_msg);
-                        textView.setText("You clicked me for C Disc data!");
-                    }
-                }
-        );
     }
 
     @Override
