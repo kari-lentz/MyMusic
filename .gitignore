@@ -8,5 +8,8 @@
 *.jar
 *.apk
 *.iml
+/.idea
+*~
+
 
 
