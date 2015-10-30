@@ -1,30 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/GRID_BACKGROUND_COLOR">
 
     <TextView
-        android:layout_width="0sp"
+        android:layout_width="80sp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/lv_media_impact_dts" />
+        android:layout_weight="0"
+        android:id="@+id/lv_media_impact_dts"
+        android:textColor="@color/GRID_TEXT_COLOR" />
 
     <TextView
-        android:layout_width="0sp"
+        android:layout_width="200sp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/lv_media_title" />
+        android:layout_weight="0"
+        android:id="@+id/lv_media_title"
+        android:textColor="@color/GRID_TEXT_COLOR" />
 
     <TextView
-        android:layout_width="0sp"
+        android:layout_width="200sp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/lv_media_artist" />
+        android:layout_weight="0"
+        android:id="@+id/lv_media_artist"
+        android:textColor="@color/GRID_TEXT_COLOR"
+        />
 
     <TextView
-        android:layout_width="0sp"
+        android:layout_width="100sp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/lv_media_edit" />
+        android:layout_weight="0"
+        android:id="@+id/lv_media_edit"
+        android:textColor="@color/GRID_TEXT_COLOR"
+        />
 
 </LinearLayout>

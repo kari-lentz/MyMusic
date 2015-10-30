@@ -2,7 +2,9 @@ package com.amemusic.mymusic;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -18,9 +20,18 @@ import java.util.ArrayList;
  */
 public class media_adapter_t extends ArrayAdapter<media_t> {
 
+    private View last_hover_view_;
+    private int normal_color_;
+    private int hover_color_;
+
     public media_adapter_t(Context context, ArrayList<media_t> media_list){
 
         super(context,android.R.layout.simple_list_item_1, android.R.id.text1, media_list);
+
+        last_hover_view_ = null;
+
+        normal_color_ = ContextCompat.getColor(context, R.color.GRID_BACKGROUND_COLOR);
+        hover_color_ = ContextCompat.getColor(context, R.color.GRID_HOVER_BACKGROUND_COLOR);
      }
 
     @Override
@@ -33,6 +44,21 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
         if(convertView == null) {
 
             convertView = inflater.inflate(R.layout.lv_media_row, null);
+
+            convertView.setOnHoverListener(new View.OnHoverListener() {
+                @Override
+                public boolean onHover(View v, MotionEvent event) {
+
+                    if(v != last_hover_view_ && last_hover_view_ != null){
+                        last_hover_view_.setBackgroundColor(normal_color_);
+                    }
+
+                    v.setBackgroundColor(hover_color_);
+                    last_hover_view_ = v;
+
+                    return false;
+                }
+            });
         }
 
         t1=(TextView) convertView.findViewById(R.id.lv_media_impact_dts);
