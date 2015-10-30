@@ -39,17 +39,30 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
 
         LayoutInflater inflater= LayoutInflater.from(getContext());
 
-        TextView t1, t2, t3, t4;
-
         if(convertView == null) {
 
             convertView = inflater.inflate(R.layout.lv_media_row, null);
+
+            if ((convertView instanceof ViewGroup)) {
+
+                ViewGroup viewGroup = (ViewGroup) convertView;
+
+                TextView tv[]= new TextView[4];
+
+                for(int idx=0; idx<4; ++idx){
+                    View tvl = View.inflate(convertView.getContext(), R.layout.lv_media_col, null);
+                    viewGroup.addView(tvl);
+                    tv[idx] = (TextView) tvl.findViewById(R.id.lv_media_col);
+                  }
+
+                convertView.setTag(tv);
+            }
 
             convertView.setOnHoverListener(new View.OnHoverListener() {
                 @Override
                 public boolean onHover(View v, MotionEvent event) {
 
-                    if(v != last_hover_view_ && last_hover_view_ != null){
+                    if (v != last_hover_view_ && last_hover_view_ != null) {
                         last_hover_view_.setBackgroundColor(normal_color_);
                     }
 
@@ -61,17 +74,14 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
             });
         }
 
-        t1=(TextView) convertView.findViewById(R.id.lv_media_impact_dts);
-        t2=(TextView) convertView.findViewById(R.id.lv_media_title);
-        t3=(TextView) convertView.findViewById(R.id.lv_media_artist);
-        t4=(TextView) convertView.findViewById(R.id.lv_media_edit);
+        TextView [] tv = (TextView []) convertView.getTag();
 
-         media_t media = (media_t) this.getItem(position);
+        media_t media = (media_t) this.getItem(position);
 
-        t1.setText((new SimpleDateFormat("MM/dd/yyyy")).format(media.get_impact_dts()));
-        t2.setText(media.get_title());
-        t3.setText(media.get_artist());
-        t4.setText(media.get_edit());
+        tv[0].setText((new SimpleDateFormat("MM/dd/yyyy")).format(media.get_impact_dts()));
+        tv[1].setText(media.get_title());
+        tv[2].setText(media.get_artist());
+        tv[3].setText(media.get_edit());
 
         return convertView;
     }
