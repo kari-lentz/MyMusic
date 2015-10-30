@@ -22,20 +22,26 @@ public class my_song_reader {
         while (reader.hasNext()) {
             String name = reader.nextName();
 
-            if (name.equals("MUSIC_ID")){
-                ret.set_music_id(helper.try_int());
-            } else if (name.equals("DTS_RELEASED")) {
-                ret.set_impact_dts(helper.try_date("MM/dd/yyyy"));
-            } else if (name.equals("TITLE")) {
-                ret.set_title(helper.try_string());
-            } else if (name.equals("ARTIST")) {
-                ret.set_artist(helper.try_string());
-            } else if (name.equals("EDIT")) {
-                ret.set_edit(helper.try_string());
-            } else {
-                reader.skipValue();
+            switch(name){
+                case "MUSIC_ID":
+                    ret.set_music_id(helper.try_int());
+                    break;
+                case "DTS_RELEASED":
+                    ret.set_impact_dts(helper.try_date("MM/dd/yyyy"));
+                    break;
+                case "TITLE":
+                    ret.set_title(helper.try_string());
+                    break;
+                case "ARTIST":
+                    ret.set_artist(helper.try_string());
+                    break;
+                case "EDIT":
+                    ret.set_edit(helper.try_string());
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
             }
-
         }
 
         reader.endObject();
