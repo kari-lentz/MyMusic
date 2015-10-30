@@ -1,6 +1,7 @@
 package com.amemusic.mymusic;
 
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by klentz on 10/29/15.
@@ -13,9 +14,11 @@ public class media_t extends Object{
     private String title_;
     private String artist_;
     private String edit_;
+    private HashMap<String, Object> data_;
 
     public media_t(){
         download_ = 0;
+        data_ = new HashMap<String, Object>();
     }
 
     public int get_music_id(){
@@ -64,5 +67,13 @@ public class media_t extends Object{
 
     public void set_edit(String value){
         edit_ = value;
+    }
+
+    public HashMap<String, Object> get_data(){
+        return data_;
+    }
+
+    public void put_data(String key, Object value) {
+        data_.put(key,  value);
     }
 }
