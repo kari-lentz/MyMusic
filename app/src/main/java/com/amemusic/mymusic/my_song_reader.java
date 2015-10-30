@@ -12,28 +12,35 @@ import java.util.ArrayList;
  */
 public class my_song_reader {
 
-    static private String read_song(JsonReader reader) throws IOException {
-        String title = new String(), artist = new String();
+    static private media_t read_song(JsonReader reader) throws IOException {
+
+        media_t ret = new media_t();
 
         reader.beginObject();
 
         while (reader.hasNext()) {
             String name = reader.nextName();
-            if (name.equals("TITLE")) {
-                title = reader.nextString();
+
+            if (name.equals("MUSIC_ID")){
+                ret.set_music_id(reader.nextInt());
+            } else if (name.equals("TITLE")) {
+                ret.set_title(reader.nextString());
             } else if (name.equals("ARTIST")) {
-                artist = reader.nextString();
+                ret.set_artist(reader.nextString());
+            } else if (name.equals("EDIT")) {
+                ret.set_edit(reader.nextString());
             } else {
                 reader.skipValue();
             }
         }
 
         reader.endObject();
-        return title + " - " + artist;
+
+        return ret;
     }
 
-    static public ArrayList<String> call(InputStream in) throws IOException {
-        ArrayList<String> ret = new ArrayList<String>();
+    static public ArrayList<media_t> call(InputStream in) throws IOException {
+        ArrayList<media_t> ret = new ArrayList<media_t>();
         JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
 
         try {

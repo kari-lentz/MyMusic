@@ -16,7 +16,7 @@ import java.util.ArrayList;
 /**
  * Created by klentz on 10/29/15.
  */
-public class url_getter extends AsyncTask<URL, Integer, ArrayList<String>> {
+public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
 
     private Context context_;
     private ListView lv_;
@@ -33,7 +33,7 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<String>> {
         e_ = null;
     }
 
-    private ArrayList<String> fetch_media(URL url) throws MalformedURLException, IOException {
+    private ArrayList<media_t> fetch_media(URL url) throws MalformedURLException, IOException {
 
         final int BUFFER_SIZE=2048;
         char buffer []= new char[BUFFER_SIZE];
@@ -49,15 +49,15 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<String>> {
     }
 
     @Override
-    protected ArrayList<String> doInBackground(URL ... urls){
+    protected ArrayList<media_t> doInBackground(URL ... urls){
 
-        ArrayList<String> ret;
+        ArrayList<media_t> ret;
 
         try {
             ret=fetch_media(urls[0]);
             e_ = null;
         }catch(Exception e) {
-            ret = new ArrayList<String>();
+            ret = new ArrayList<media_t>();
             e_ = e;
         }
 
@@ -65,10 +65,10 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<String>> {
     }
 
     @Override
-    protected void onPostExecute(ArrayList<String> media){
+    protected void onPostExecute(ArrayList<media_t> media_list){
 
         if(e_ == null) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context_, android.R.layout.simple_list_item_1, android.R.id.text1, media);
+            media_adapter_t adapter = new media_adapter_t(context_, media_list);
             tv_status_.setText("Ready");
             lv_.setAdapter(adapter);
         }else {
