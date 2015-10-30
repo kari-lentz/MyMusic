@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.amemusic.mymusisc.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 /**
@@ -17,17 +18,13 @@ import java.util.ArrayList;
  */
 public class media_adapter_t extends ArrayAdapter<media_t> {
 
-    private ArrayList<media_t> media_list_;
-
     public media_adapter_t(Context context, ArrayList<media_t> media_list){
 
         super(context,android.R.layout.simple_list_item_1, android.R.id.text1, media_list);
-        media_list_ = media_list;
-    }
+     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        // TODO Auto-generated method stub
 
         LayoutInflater inflater= LayoutInflater.from(getContext());
 
@@ -43,9 +40,9 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
         t3=(TextView) convertView.findViewById(R.id.lv_media_artist);
         t4=(TextView) convertView.findViewById(R.id.lv_media_edit);
 
-        media_t media = media_list_.get(position);
+         media_t media = (media_t) this.getItem(position);
 
-        t1.setText(media.get_impact_dts().toString());
+        t1.setText((new SimpleDateFormat("MM/dd/yyyy")).format(media.get_impact_dts()));
         t2.setText(media.get_title());
         t3.setText(media.get_artist());
         t4.setText(media.get_edit());

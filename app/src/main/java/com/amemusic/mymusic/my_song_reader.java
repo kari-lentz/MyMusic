@@ -15,6 +15,7 @@ public class my_song_reader {
     static private media_t read_song(JsonReader reader) throws IOException {
 
         media_t ret = new media_t();
+        my_json_helper helper = new my_json_helper(reader);
 
         reader.beginObject();
 
@@ -22,16 +23,19 @@ public class my_song_reader {
             String name = reader.nextName();
 
             if (name.equals("MUSIC_ID")){
-                ret.set_music_id(reader.nextInt());
+                ret.set_music_id(helper.try_int());
+            } else if (name.equals("DTS_RELEASED")) {
+                ret.set_impact_dts(helper.try_date("MM/dd/yyyy"));
             } else if (name.equals("TITLE")) {
-                ret.set_title(reader.nextString());
+                ret.set_title(helper.try_string());
             } else if (name.equals("ARTIST")) {
-                ret.set_artist(reader.nextString());
+                ret.set_artist(helper.try_string());
             } else if (name.equals("EDIT")) {
-                ret.set_edit(reader.nextString());
+                ret.set_edit(helper.try_string());
             } else {
                 reader.skipValue();
             }
+
         }
 
         reader.endObject();
