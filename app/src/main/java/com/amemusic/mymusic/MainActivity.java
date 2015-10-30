@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         ListView lv = (ListView) findViewById(R.id.lv_media);
         TextView tv = (TextView) findViewById(R.id.txt_status);
         try {
-            AsyncTask task = new url_getter(this, lv, tv).execute(new URL("http://tophitsdirect.com/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            AsyncTask task = new url_getter(this, lv, tv).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
         } catch (MalformedURLException e) {
             tv.setText("Incomplete URL");
         }
