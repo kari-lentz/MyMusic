@@ -1,6 +1,6 @@
 package com.amemusic.mymusic;
 
-import android.app.Activity;
+
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
@@ -20,16 +20,18 @@ import java.util.ArrayList;
  */
 public class media_adapter_t extends ArrayAdapter<media_t> {
 
+    private grid_cols_t grid_cols_;
     private View last_hover_view_;
     private int normal_color_;
     private int hover_color_;
 
-    public media_adapter_t(Context context, ArrayList<media_t> media_list){
+    public media_adapter_t(Context context, grid_cols_t grid_cols, ArrayList<media_t> media_list){
 
         super(context,android.R.layout.simple_list_item_1, android.R.id.text1, media_list);
 
-        last_hover_view_ = null;
+        grid_cols_ = grid_cols;
 
+        last_hover_view_ = null;
         normal_color_ = ContextCompat.getColor(context, R.color.GRID_BACKGROUND_COLOR);
         hover_color_ = ContextCompat.getColor(context, R.color.GRID_HOVER_BACKGROUND_COLOR);
      }
@@ -52,7 +54,12 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
                 for(int idx=0; idx<4; ++idx){
                     View tvl = View.inflate(convertView.getContext(), R.layout.lv_media_col, null);
                     viewGroup.addView(tvl);
-                    tv[idx] = (TextView) tvl.findViewById(R.id.lv_media_col);
+
+                    TextView temp = (TextView) tvl.findViewById(R.id.lv_media_col);
+                    ViewGroup.LayoutParams params = temp.getLayoutParams();
+                    params.width=100;
+                    temp.setLayoutParams(params);
+                    tv[idx] = temp;
                   }
 
                 convertView.setTag(tv);

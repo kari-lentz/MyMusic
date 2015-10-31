@@ -21,10 +21,10 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
     private Context context_;
     private ListView lv_;
     private TextView tv_status_;
-    private grid_col_t[] grid_cols_;
+    private grid_cols_t grid_cols_;
     Exception e_;
 
-    public url_getter(Context context, ListView lv, TextView tv_status, grid_col_t[] grid_cols ){
+    public url_getter(Context context, ListView lv, TextView tv_status, grid_cols_t grid_cols ){
         super();
 
         context_ = context;
@@ -70,7 +70,7 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
     protected void onPostExecute(ArrayList<media_t> media_list){
 
         if(e_ == null) {
-            media_adapter_t adapter = new media_adapter_t(context_, media_list);
+            media_adapter_t adapter = new media_adapter_t(context_, grid_cols_, media_list);
             tv_status_.setText("Ready");
             lv_.setAdapter(adapter);
         }else {

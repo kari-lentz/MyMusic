@@ -64,4 +64,7 @@ public class my_json_helper {
         return ret;
     }
 
+    public void skipValue() throws IOException{
+        inner_.skipValue();
+    }
 }
