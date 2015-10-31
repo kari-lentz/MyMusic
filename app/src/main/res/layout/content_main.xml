@@ -37,12 +37,22 @@
         android:layout_below="@+id/btn_fetch_media"
         android:layout_centerHorizontal="true" />
 
-    <ListView
+    <HorizontalScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/lv_media"
-        android:layout_below="@+id/txt_title_media_list"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:id="@+id/horizontalScrollView"
+        android:layout_below="@+id/btn_fetch_media"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false" >
 
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/lv_media"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:dividerHeight="0dp"
+            android:divider="#ffffff" />
+
+    </HorizontalScrollView>
 </RelativeLayout>
