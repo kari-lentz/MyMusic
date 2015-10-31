@@ -43,7 +43,7 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
         try {
-            return my_song_reader.call(urlConnection.getInputStream());
+            return (new my_song_reader(grid_cols_)).call(urlConnection.getInputStream());
         }
         finally {
             urlConnection.disconnect();

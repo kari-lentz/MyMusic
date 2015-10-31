@@ -12,7 +12,9 @@ import java.util.ArrayList;
  */
 public class my_song_reader {
 
-    static private media_t read_song(JsonReader reader) throws IOException {
+    private grid_col_t[] grid_cols_;
+
+    private media_t read_song(JsonReader reader) throws IOException {
 
         media_t ret = new media_t();
         my_json_helper helper = new my_json_helper(reader);
@@ -49,7 +51,12 @@ public class my_song_reader {
         return ret;
     }
 
-    static public ArrayList<media_t> call(InputStream in) throws IOException {
+    public my_song_reader(grid_col_t[] grid_cols)
+    {
+        grid_cols_ = grid_cols;
+    }
+
+    public ArrayList<media_t> call(InputStream in) throws IOException {
         ArrayList<media_t> ret = new ArrayList<media_t>();
         JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
 
