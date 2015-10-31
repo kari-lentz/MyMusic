@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private void run_view() {
 
         grid_cols_t cols = new grid_cols_t(new grid_col_t[]{
-                new grid_col_t("DTS_RELEASED", "Impact Date", 80, grid_col_t.types_t.DATE),
+                new grid_col_date_t("DTS_RELEASED", "Impact Date", 80),
                 new grid_col_t("TITLE", "Title", 200, grid_col_t.types_t.STRING),
                 new grid_col_t("ARTIST", "Artist", 200, grid_col_t.types_t.STRING),
                 new grid_col_t("EDIT", "Edit", 200, grid_col_t.types_t.STRING),
