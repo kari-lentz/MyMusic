@@ -1,6 +1,8 @@
 package com.amemusic.mymusic;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -13,7 +15,7 @@ public class grid_cols_t {
     private ArrayList<grid_col_t> cols_;
     private Iterator<grid_col_t> it_;
 
-    public grid_cols_t(grid_col_t[] grid_cols){
+    grid_cols_t(grid_col_t[] grid_cols){
 
         col_hash_ = new Hashtable<String, grid_col_t>();
         cols_ = new ArrayList<grid_col_t>();
@@ -27,11 +29,11 @@ public class grid_cols_t {
         rewind();
     }
 
-    public grid_col_t get(int idx){
+    grid_col_t get(int idx){
         return cols_.get(idx);
     }
 
-    public grid_col_t get(String key){
+    grid_col_t get(String key){
         return col_hash_.get(key);
     }
 
@@ -46,4 +48,5 @@ public class grid_cols_t {
     grid_col_t next(){
         return it_.next();
     }
+
 }

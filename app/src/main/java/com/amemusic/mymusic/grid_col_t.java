@@ -1,5 +1,7 @@
 package com.amemusic.mymusic;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Created by klentz on 10/30/15.
  */
@@ -39,4 +41,9 @@ public class grid_col_t {
     public types_t get_type(){
         return type_;
     }
+
+    public String string(Object value){
+        return value.toString();
+    }
 }
+

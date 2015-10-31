@@ -15,7 +15,7 @@ public class my_song_reader {
 
     private grid_cols_t grid_cols_;
 
-    private media_t try_special(media_t ret, String key, Object value){
+    private Object try_special(media_t ret, String key, Object value){
 
         switch(key){
             case "DTS_RELEASED":
@@ -32,7 +32,7 @@ public class my_song_reader {
                 break;
         }
 
-        return ret;
+        return value;
     }
 
     private media_t consume_special(media_t ret, String key, my_json_helper helper) throws IOException{

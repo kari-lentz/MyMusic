@@ -14,6 +14,7 @@ import com.amemusic.mymusisc.R;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by klentz on 10/29/15.
@@ -49,20 +50,24 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
 
                 ViewGroup viewGroup = (ViewGroup) convertView;
 
-                TextView tv[]= new TextView[4];
+                ArrayList<TextView>  tv_list =  new ArrayList<TextView>();
+                grid_cols_.rewind();
 
-                for(int idx=0; idx<4; ++idx){
+                while(grid_cols_.has_next()) {
+                    grid_col_t col = grid_cols_.next();
+
                     View tvl = View.inflate(convertView.getContext(), R.layout.lv_media_col, null);
                     viewGroup.addView(tvl);
 
-                    TextView temp = (TextView) tvl.findViewById(R.id.lv_media_col);
-                    ViewGroup.LayoutParams params = temp.getLayoutParams();
-                    params.width=100;
-                    temp.setLayoutParams(params);
-                    tv[idx] = temp;
-                  }
+                    TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);
+                    ViewGroup.LayoutParams params = tv.getLayoutParams();
+                    params.width=col.get_width();
+                    tv.setLayoutParams(params);
 
-                convertView.setTag(tv);
+                    tv_list.add(tv);
+                }
+
+                convertView.setTag(tv_list);
             }
 
             convertView.setOnHoverListener(new View.OnHoverListener() {
@@ -81,14 +86,20 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
             });
         }
 
-        TextView [] tv = (TextView []) convertView.getTag();
+        ArrayList<TextView> tv_list = (ArrayList<TextView>) convertView.getTag();
 
         media_t media = (media_t) this.getItem(position);
 
-        tv[0].setText((new SimpleDateFormat("MM/dd/yyyy")).format(media.get_impact_dts()));
-        tv[1].setText(media.get_title());
-        tv[2].setText(media.get_artist());
-        tv[3].setText(media.get_edit());
+        grid_cols_.rewind();
+        Iterator<TextView> it = tv_list.iterator();
+
+        while(grid_cols_.has_next()) {
+
+            grid_col_t col = grid_cols_.next();
+            TextView tv = it.next();
+
+            tv.setText(col.string(media.get_data(col.get_key())));
+        }
 
         return convertView;
     }

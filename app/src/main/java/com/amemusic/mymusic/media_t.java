@@ -69,8 +69,8 @@ public class media_t extends Object{
         edit_ = value;
     }
 
-    public Hashtable<String, Object> get_data(){
-        return data_;
+    public Object get_data(String key){
+        return data_.get(key);
     }
 
     public void put_data(String key, Object value) {
