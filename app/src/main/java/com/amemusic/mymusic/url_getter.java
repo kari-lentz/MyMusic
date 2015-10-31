@@ -21,14 +21,16 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
     private Context context_;
     private ListView lv_;
     private TextView tv_status_;
+    private grid_col_t[] grid_cols_;
     Exception e_;
 
-    public url_getter(Context context, ListView lv, TextView tv_status){
+    public url_getter(Context context, ListView lv, TextView tv_status, grid_col_t[] grid_cols ){
         super();
 
         context_ = context;
         lv_ = lv;
         tv_status_ = tv_status;
+        grid_cols_ = grid_cols;
 
         e_ = null;
     }
@@ -37,16 +39,6 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
 
         final int BUFFER_SIZE=2048;
         char buffer []= new char[BUFFER_SIZE];
-
-        grid_col_t[] cols = new grid_col_t[]{
-                new grid_col_t("DISC", "Disc", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("LABEL", "Label", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("FORMAT", "Format", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("BPM", "BPM", 100, grid_col_t.types_t.INT),
-                new grid_col_t("INTRO", "Intro", 100, grid_col_t.types_t.INT),
-                new grid_col_t("RUN", "Run", 100, grid_col_t.types_t.INT),
-                new grid_col_t("CHART", "Chart", 100, grid_col_t.types_t.STRING)
-        };
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 

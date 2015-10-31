@@ -22,10 +22,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void run_view() {
 
+        grid_col_t[] cols = new grid_col_t[]{
+                new grid_col_t("DISC", "Disc", 100, grid_col_t.types_t.STRING),
+                new grid_col_t("LABEL", "Label", 100, grid_col_t.types_t.STRING),
+                new grid_col_t("FORMAT", "Format", 100, grid_col_t.types_t.STRING),
+                new grid_col_t("BPM", "BPM", 100, grid_col_t.types_t.INT),
+                new grid_col_t("INTRO", "Intro", 100, grid_col_t.types_t.INT),
+                new grid_col_t("RUN", "Run", 100, grid_col_t.types_t.INT),
+                new grid_col_t("CHART", "Chart", 100, grid_col_t.types_t.STRING)
+        };
+
         ListView lv = (ListView) findViewById(R.id.lv_media);
         TextView tv = (TextView) findViewById(R.id.txt_status);
         try {
-            AsyncTask task = new url_getter(this, lv, tv).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            AsyncTask task = new url_getter(this, lv, tv, cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
         } catch (MalformedURLException e) {
             tv.setText("Incomplete URL");
         }
