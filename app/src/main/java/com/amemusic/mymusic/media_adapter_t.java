@@ -2,50 +2,64 @@ package com.amemusic.mymusic;
 
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.amemusic.mymusisc.R;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
  * Created by klentz on 10/29/15.
  */
-public class media_adapter_t extends ArrayAdapter<media_t> {
+public class media_adapter_t extends BaseAdapter {
 
+    private Context context_;
     private grid_cols_t grid_cols_;
-    private View last_hover_view_;
-    private int normal_color_;
-    private int hover_color_;
+    private ArrayList<media_t> media_list_;
+
+    private View row_view_;
 
     public media_adapter_t(Context context, grid_cols_t grid_cols, ArrayList<media_t> media_list){
 
-        super(context,android.R.layout.simple_list_item_1, android.R.id.text1, media_list);
+        super();
 
+        context_ = context;
         grid_cols_ = grid_cols;
+        media_list_ = media_list;
 
-        last_hover_view_ = null;
-        normal_color_ = ContextCompat.getColor(context, R.color.GRID_BACKGROUND_COLOR);
-        hover_color_ = ContextCompat.getColor(context, R.color.GRID_HOVER_BACKGROUND_COLOR);
+        row_view_ = null;
      }
+
+    @Override
+    public Object getItem(int position){
+        return media_list_.get(position);
+    }
+
+    @Override
+    public int getCount(){
+        return media_list_.size();
+    }
+
+    @Override
+    public long getItemId(int position){
+        return 0;
+    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        LayoutInflater inflater= LayoutInflater.from(getContext());
+        LayoutInflater inflater= LayoutInflater.from(context_);
 
         if(convertView == null) {
 
-            convertView = inflater.inflate(R.layout.lv_media_row, null);
+            row_view_ = inflater.inflate(R.layout.lv_media_row, null);
+            convertView = row_view_;
 
             if ((convertView instanceof ViewGroup)) {
 
@@ -71,20 +85,9 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
                 convertView.setTag(tv_list);
             }
 
-            convertView.setOnHoverListener(new View.OnHoverListener() {
-                @Override
-                public boolean onHover(View v, MotionEvent event) {
-
-                    if (v != last_hover_view_ && last_hover_view_ != null) {
-                        last_hover_view_.setBackgroundColor(normal_color_);
-                    }
-
-                    v.setBackgroundColor(hover_color_);
-                    last_hover_view_ = v;
-
-                    return false;
-                }
-            });
+        }
+        else {
+            row_view_ = convertView;
         }
 
         ArrayList<TextView> tv_list = (ArrayList<TextView>) convertView.getTag();
