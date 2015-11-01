@@ -3,6 +3,7 @@ package com.amemusic.mymusic;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -61,7 +62,7 @@ public class media_adapter_t extends ArrayAdapter<media_t> {
 
                     TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);
                     ViewGroup.LayoutParams params = tv.getLayoutParams();
-                    params.width=col.get_width();
+                    params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,params.width=col.get_width() , convertView.getResources().getDisplayMetrics());
                     tv.setLayoutParams(params);
 
                     tv_list.add(tv);
