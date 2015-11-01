@@ -52,7 +52,9 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:dividerHeight="0dp"
-            android:divider="#ffffff" />
+            android:divider="#ffffff"
+            android:background="@color/GRID_BACKGROUND_COLOR"
+            />
 
     </HorizontalScrollView>
 </RelativeLayout>
