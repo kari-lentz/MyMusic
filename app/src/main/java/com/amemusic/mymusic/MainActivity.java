@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;;
@@ -36,7 +37,18 @@ public class MainActivity extends AppCompatActivity {
                 new grid_col_t("CHART", "Chart", 100, grid_col_t.types_t.STRING)
         });
 
-        ListView lv = (ListView) findViewById(R.id.lv_media);
+        final ListView lv = (ListView) findViewById(R.id.lv_media);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                media_adapter_t adapter = ((media_adapter_t) lv.getAdapter());
+                if(adapter != null){
+                    adapter.update_selected_pos(view, position);
+                }
+            }
+        });
+
         TextView tv = (TextView) findViewById(R.id.txt_status);
         try {
             AsyncTask task = new url_getter(this, lv, tv, cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));

@@ -2,6 +2,7 @@ package com.amemusic.mymusic;
 
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +23,10 @@ public class media_adapter_t extends BaseAdapter {
     private Context context_;
     private grid_cols_t grid_cols_;
     private ArrayList<media_t> media_list_;
-
-    private View row_view_;
+    private int selected_position_;
+    private int default_color_;
+    private int selected_color_;
+    private View selected_view_;
 
     public media_adapter_t(Context context, grid_cols_t grid_cols, ArrayList<media_t> media_list){
 
@@ -33,8 +36,24 @@ public class media_adapter_t extends BaseAdapter {
         grid_cols_ = grid_cols;
         media_list_ = media_list;
 
-        row_view_ = null;
-     }
+        selected_position_ = -1;
+        selected_view_ = null;
+
+        default_color_ = ContextCompat.getColor(context, R.color.GRID_BACKGROUND_COLOR);
+        selected_color_ = ContextCompat.getColor(context, R.color.GRID_SELECTED_BACKGROUND_COLOR);
+    }
+
+    public void update_selected_pos(View view, int position){
+        view.setBackgroundColor(selected_color_);
+        selected_position_ = position;
+
+        if(selected_view_ != null && (selected_view_ != view))
+        {
+            selected_view_.setBackgroundColor(default_color_);
+        }
+
+        selected_view_ = view;
+    }
 
     @Override
     public Object getItem(int position){
@@ -58,8 +77,7 @@ public class media_adapter_t extends BaseAdapter {
 
         if(convertView == null) {
 
-            row_view_ = inflater.inflate(R.layout.lv_media_row, null);
-            convertView = row_view_;
+            convertView = inflater.inflate(R.layout.lv_media_row, null);
 
             if ((convertView instanceof ViewGroup)) {
 
@@ -86,11 +104,15 @@ public class media_adapter_t extends BaseAdapter {
             }
 
         }
-        else {
-            row_view_ = convertView;
-        }
 
         ArrayList<TextView> tv_list = (ArrayList<TextView>) convertView.getTag();
+
+        if(position == selected_position_) {
+            convertView.setBackgroundColor(selected_color_);
+        }
+        else {
+            convertView.setBackgroundColor(default_color_);
+        }
 
         media_t media = (media_t) this.getItem(position);
 
