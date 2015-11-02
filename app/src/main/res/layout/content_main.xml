@@ -68,7 +68,9 @@
                 android:id="@+id/lv_media_header"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:showDividers="beginning|middle|end"
+                android:divider="@drawable/hdivider">
             </LinearLayout>
 
             <ListView
