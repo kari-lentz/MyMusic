@@ -24,7 +24,7 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    private void run_view(grid_cols_t grid_cols) {
+    private void run_view(View header, grid_cols_t grid_cols) {
 
         final ListView lv = (ListView) findViewById(R.id.lv_media);
 
@@ -38,11 +38,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TextView tv = (TextView) findViewById(R.id.txt_status);
+        TextView tv_status = (TextView) findViewById(R.id.txt_status);
         try {
-            AsyncTask task = new url_getter(this, lv, tv, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            AsyncTask task = new url_getter(this, lv, tv_status, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
         } catch (MalformedURLException e) {
-            tv.setText("Incomplete URL");
+            tv_status.setText("Incomplete URL");
         }
     }
 
@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 new grid_col_t("CHART", "Chart", 100, grid_col_t.types_t.STRING)
         });
 
-        View header= findViewById(R.id.lv_media_header);
+        final View header= findViewById(R.id.lv_media_header);
         int header_color = ContextCompat.getColor(header.getContext(), R.color.GRID_SELECTED_BACKGROUND_COLOR);
         header.setBackgroundColor(header_color);
 
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         TextView tv = (TextView) findViewById(R.id.txt_status);
                         tv.setText("Loading ...");
-                        run_view(grid_cols);
+                        run_view(header, grid_cols);
                         }});
 
     }
