@@ -92,12 +92,6 @@ public class media_adapter_t extends BaseAdapter {
                     View tvl = View.inflate(convertView.getContext(), R.layout.lv_media_col, null);
                     viewGroup.addView(tvl);
                     col_views.add((ViewGroup) tvl);
-
-                    TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);
-
-                    ViewGroup.LayoutParams params = tvl.getLayoutParams();
-                    params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,params.width=col.get_width() , convertView.getResources().getDisplayMetrics());
-                    tvl.setLayoutParams(params);
                 }
 
                 convertView.setTag(col_views);
@@ -123,6 +117,10 @@ public class media_adapter_t extends BaseAdapter {
 
             grid_col_t col = grid_cols_.next();
             ViewGroup tvl = it.next();
+
+            ViewGroup.LayoutParams params = tvl.getLayoutParams();
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,params.width=col.get_width() , convertView.getResources().getDisplayMetrics());
+            tvl.setLayoutParams(params);
 
             TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);
             tv.setText(col.string(media.get_data(col.get_key())));

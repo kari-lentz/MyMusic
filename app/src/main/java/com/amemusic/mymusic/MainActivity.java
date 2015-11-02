@@ -8,11 +8,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;;
@@ -46,6 +48,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void resize_col(grid_col_t col, View header_col, int offset){
+
+        col.set_width(col.get_width() + 10);
+
+        ViewGroup.LayoutParams params = header_col.getLayoutParams();
+        params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.width = col.get_width(), header_col.getResources().getDisplayMetrics());
+        header_col.setLayoutParams(params);
+        header_col.requestLayout();
+
+        final ListView lv = (ListView) findViewById(R.id.lv_media);
+        ((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,16 +91,25 @@ public class MainActivity extends AppCompatActivity {
 
         while(grid_cols.has_next()) {
 
-            grid_col_t col = grid_cols.next();
+            final grid_col_t col = grid_cols.next();
 
-            View vcol = View.inflate(header.getContext(), R.layout.lv_media_col, null);
-            ((ViewGroup) header).addView(vcol);
-            TextView tv = (TextView) vcol.findViewById(R.id.lv_media_col);
+            final View header_col = View.inflate(header.getContext(), R.layout.lv_media_col, null);
+            ((ViewGroup) header).addView(header_col);
+            TextView tv = (TextView) header_col.findViewById(R.id.lv_media_col);
             tv.setText(col.get_header());
 
-            ViewGroup.LayoutParams params = tv.getLayoutParams();
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.width = col.get_width(), tv.getResources().getDisplayMetrics());
-            tv.setLayoutParams(params);
+            ViewGroup.LayoutParams params = header_col.getLayoutParams();
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.width = col.get_width(), header_col.getResources().getDisplayMetrics());
+            header_col.setLayoutParams(params);
+
+            header_col.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+
+                    resize_col(col, header_col, 10);
+                    return false;
+                }
+            });
         }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
