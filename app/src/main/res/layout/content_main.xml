@@ -9,52 +9,77 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main" tools:context=".MainActivity">
 
-    <TextView android:text="Ready" android:layout_width="wrap_content"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/top_controls"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/txt_status"
-        android:textColor="@color/LBL_TEXT_COLOR"
-        android:layout_above="@+id/lv_media"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:gravity="center">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fetch Songs"
-        android:id="@+id/btn_fetch_media"
-        android:textColor="@color/BTN_TEXT_COLOR"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        <TextView android:text="Ready"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_status"
+            android:textColor="@color/LBL_TEXT_COLOR"
+            android:layout_alignBaseline="@+id/btn_fetch_media"
+            android:layout_alignBottom="@+id/btn_fetch_media"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Releases"
-        android:id="@+id/txt_title_media_list"
-        android:textColor="@color/CONTROL_LABEL_COLOR"
-        android:textSize="@dimen/CONTROL_LABEL_FONT_SIZE"
-        android:textStyle="bold"
-        android:layout_below="@+id/btn_fetch_media"
-        android:layout_centerHorizontal="true" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Releases"
+            android:id="@+id/txt_title_media_list"
+            android:textColor="@color/CONTROL_LABEL_COLOR"
+            android:textSize="@dimen/CONTROL_LABEL_FONT_SIZE"
+            android:textStyle="bold"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Songs"
+            android:id="@+id/btn_fetch_media"
+            android:textColor="@color/BTN_TEXT_COLOR"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
 
     <HorizontalScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/horizontalScrollView"
-        android:layout_below="@+id/btn_fetch_media"
+        android:layout_below="@+id/top_controls"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="false" >
 
-        <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/lv_media"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:dividerHeight="0dp"
-            android:divider="#ffffff"
-            android:background="@color/GRID_BACKGROUND_COLOR"
-            />
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical" android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/lv_media_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            </LinearLayout>
+
+            <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/lv_media"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:dividerHeight="0dp"
+                android:divider="#ffffff"
+                android:background="@color/GRID_BACKGROUND_COLOR"
+                />
+
+        </LinearLayout>
 
     </HorizontalScrollView>
 </RelativeLayout>

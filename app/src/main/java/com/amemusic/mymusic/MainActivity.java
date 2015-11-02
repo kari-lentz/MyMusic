@@ -4,11 +4,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -21,21 +24,7 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    private void run_view() {
-
-        grid_cols_t cols = new grid_cols_t(new grid_col_t[]{
-                new grid_col_date_t("DTS_RELEASED", "Impact Date", 80),
-                new grid_col_t("TITLE", "Title", 200, grid_col_t.types_t.STRING),
-                new grid_col_t("ARTIST", "Artist", 200, grid_col_t.types_t.STRING),
-                new grid_col_t("EDIT", "Edit", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("DISC", "Disc", 70, grid_col_t.types_t.STRING),
-                new grid_col_t("LABEL", "Label", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("FORMAT", "Genre", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("BPM", "BPM", 50, grid_col_t.types_t.INT),
-                new grid_col_t("INTRO", "Intro", 100, grid_col_t.types_t.INT),
-                new grid_col_t("RUN", "Run", 100, grid_col_t.types_t.INT),
-                new grid_col_t("CHART", "Chart", 100, grid_col_t.types_t.STRING)
-        });
+    private void run_view(grid_cols_t grid_cols) {
 
         final ListView lv = (ListView) findViewById(R.id.lv_media);
 
@@ -51,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView tv = (TextView) findViewById(R.id.txt_status);
         try {
-            AsyncTask task = new url_getter(this, lv, tv, cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            AsyncTask task = new url_getter(this, lv, tv, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
         } catch (MalformedURLException e) {
             tv.setText("Incomplete URL");
         }
@@ -60,9 +49,44 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
+                new grid_col_date_t("DTS_RELEASED", "Impact Date", 80),
+                new grid_col_t("TITLE", "Title", 200, grid_col_t.types_t.STRING),
+                new grid_col_t("ARTIST", "Artist", 200, grid_col_t.types_t.STRING),
+                new grid_col_t("EDIT", "Edit", 100, grid_col_t.types_t.STRING),
+                new grid_col_t("DISC", "Disc", 70, grid_col_t.types_t.STRING),
+                new grid_col_t("LABEL", "Label", 100, grid_col_t.types_t.STRING),
+                new grid_col_t("FORMAT", "Genre", 100, grid_col_t.types_t.STRING),
+                new grid_col_t("BPM", "BPM", 50, grid_col_t.types_t.INT),
+                new grid_col_t("INTRO", "Intro", 100, grid_col_t.types_t.INT),
+                new grid_col_t("RUN", "Run", 100, grid_col_t.types_t.INT),
+                new grid_col_t("CHART", "Chart", 100, grid_col_t.types_t.STRING)
+        });
+
+        View header= findViewById(R.id.lv_media_header);
+        int header_color = ContextCompat.getColor(header.getContext(), R.color.GRID_SELECTED_BACKGROUND_COLOR);
+        header.setBackgroundColor(header_color);
+
+        grid_cols.rewind();
+
+        while(grid_cols.has_next()) {
+
+            grid_col_t col = grid_cols.next();
+
+            View vcol = View.inflate(header.getContext(), R.layout.lv_media_col, null);
+            ((ViewGroup) header).addView(vcol);
+            TextView tv = (TextView) vcol.findViewById(R.id.lv_media_col);
+            tv.setText(col.get_header());
+
+            ViewGroup.LayoutParams params = tv.getLayoutParams();
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.width = col.get_width(), tv.getResources().getDisplayMetrics());
+            tv.setLayoutParams(params);
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -78,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         TextView tv = (TextView) findViewById(R.id.txt_status);
                         tv.setText("Loading ...");
-                        run_view();
+                        run_view(grid_cols);
                         }});
 
     }
