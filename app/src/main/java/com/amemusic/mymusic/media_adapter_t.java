@@ -83,7 +83,7 @@ public class media_adapter_t extends BaseAdapter {
 
                 ViewGroup viewGroup = (ViewGroup) convertView;
 
-                ArrayList<TextView>  tv_list =  new ArrayList<TextView>();
+                ArrayList<ViewGroup>  col_views =  new ArrayList<ViewGroup>();
                 grid_cols_.rewind();
 
                 while(grid_cols_.has_next()) {
@@ -91,21 +91,21 @@ public class media_adapter_t extends BaseAdapter {
 
                     View tvl = View.inflate(convertView.getContext(), R.layout.lv_media_col, null);
                     viewGroup.addView(tvl);
+                    col_views.add((ViewGroup) tvl);
 
                     TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);
-                    ViewGroup.LayoutParams params = tv.getLayoutParams();
-                    params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,params.width=col.get_width() , convertView.getResources().getDisplayMetrics());
-                    tv.setLayoutParams(params);
 
-                    tv_list.add(tv);
+                    ViewGroup.LayoutParams params = tvl.getLayoutParams();
+                    params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,params.width=col.get_width() , convertView.getResources().getDisplayMetrics());
+                    tvl.setLayoutParams(params);
                 }
 
-                convertView.setTag(tv_list);
+                convertView.setTag(col_views);
             }
 
         }
 
-        ArrayList<TextView> tv_list = (ArrayList<TextView>) convertView.getTag();
+        ArrayList<ViewGroup> col_views = (ArrayList<ViewGroup>) convertView.getTag();
 
         if(position == selected_position_) {
             convertView.setBackgroundColor(selected_color_);
@@ -117,13 +117,14 @@ public class media_adapter_t extends BaseAdapter {
         media_t media = (media_t) this.getItem(position);
 
         grid_cols_.rewind();
-        Iterator<TextView> it = tv_list.iterator();
+        Iterator<ViewGroup> it = col_views.iterator();
 
         while(grid_cols_.has_next()) {
 
             grid_col_t col = grid_cols_.next();
-            TextView tv = it.next();
+            ViewGroup tvl = it.next();
 
+            TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);
             tv.setText(col.string(media.get_data(col.get_key())));
         }
 
