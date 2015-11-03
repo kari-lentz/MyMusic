@@ -1,5 +1,6 @@
 package com.amemusic.mymusic;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -17,7 +18,8 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;;
+import android.widget.TextView;
+import android.widget.Toast;;
 
 import com.amemusic.mymusisc.R;
 
@@ -25,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
+
+    resize_context_t resize_context_;
 
     private void run_view(View header, grid_cols_t grid_cols) {
 
@@ -69,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final Context context = this;
+        resize_context_ = null;
+        final ListView lv = (ListView) findViewById(R.id.lv_media);
+
         final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
                 new grid_col_date_t("DTS_RELEASED", "Impact Date", 80),
                 new grid_col_t("TITLE", "Title", 200, grid_col_t.types_t.STRING),
@@ -84,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         final View header= findViewById(R.id.lv_media_header);
-        int header_color = ContextCompat.getColor(header.getContext(), R.color.GRID_SELECTED_BACKGROUND_COLOR);
+        int header_color = ContextCompat.getColor(header.getContext(), R.color.GRID_HEADER_BACKGROUND_COLOR);
         header.setBackgroundColor(header_color);
 
         grid_cols.rewind();
@@ -106,11 +114,48 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
 
-                    resize_col(col, header_col, 10);
-                    return false;
+                    switch (event.getActionMasked()) {
+                        case MotionEvent.ACTION_DOWN:
+                            resize_context_ = new resize_context_t(lv, v, col, event.getRawX()) ;
+                            break;
+                    }
+
+                    return true;
                 }
             });
         }
+
+        final View my_view = findViewById(R.id.media_horizontal_scroller);
+        my_view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if(resize_context_ != null) {
+                    TextView tv = (TextView) findViewById(R.id.txt_status);
+
+                    switch (event.getActionMasked()) {
+
+                        case MotionEvent.ACTION_MOVE:
+                            resize_context_.call(event.getRawX());
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            resize_context_.call(event.getRawX());
+                            resize_context_ = null;
+                            break;
+                        case MotionEvent.ACTION_OUTSIDE:
+                            resize_context_.call(event.getRawX());
+                            resize_context_ = null;
+                            break;
+                        default:
+                            return false;
+                    }
+                    return true;
+                } else {
+                    //re-enable scrolling
+                    return v.onTouchEvent(event);
+                }
+            }
+        });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

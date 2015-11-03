@@ -47,14 +47,15 @@
             android:textColor="@color/BTN_TEXT_COLOR"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:textSize="10sp" />
 
     </RelativeLayout>
 
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/horizontalScrollView"
+        android:id="@+id/media_horizontal_scroller"
         android:layout_below="@+id/top_controls"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="false" >
