@@ -52,19 +52,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void resize_col(grid_col_t col, View header_col, int offset){
-
-        col.set_width(col.get_width() + 10);
-
-        ViewGroup.LayoutParams params = header_col.getLayoutParams();
-        params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.width = col.get_width(), header_col.getResources().getDisplayMetrics());
-        header_col.setLayoutParams(params);
-        header_col.requestLayout();
-
-        final ListView lv = (ListView) findViewById(R.id.lv_media);
-        ((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

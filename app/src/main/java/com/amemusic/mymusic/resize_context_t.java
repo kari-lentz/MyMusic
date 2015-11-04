@@ -28,7 +28,11 @@ public class resize_context_t {
     void call(float x){
 
         int offset = (int) (x - mx_);
-        col_.set_width(col_.get_width() + offset);
+        int width = col_.get_width() + offset;
+        if(width < 50){
+            width = 50;
+        }
+        col_.set_width(width);
 
         ViewGroup.LayoutParams params = header_col_.getLayoutParams();
         params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.width = col_.get_width(), header_col_.getResources().getDisplayMetrics());
