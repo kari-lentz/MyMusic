@@ -1,6 +1,7 @@
 package com.amemusic.mymusic;
 
-import android.util.JsonReader;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -12,12 +13,12 @@ import java.util.Date;
  */
 public class my_json_helper {
 
-    private JsonReader inner_;
+    private JSONObject inner_;
     private String default_str_;
     private int default_int_;
 
-    public my_json_helper(JsonReader reader) throws IOException{
-        inner_ = reader;
+    public my_json_helper(JSONObject inner){
+        inner_ = inner;
         default_str_ = "";
         default_int_ = 0;
     }
@@ -32,39 +33,40 @@ public class my_json_helper {
         return this;
     }
 
-    public String try_string() throws IOException{
+    public String try_string(String key){
         try {
-            return inner_.nextString();
-        } catch (IllegalStateException e) {
-            inner_.skipValue();
+            return inner_.getString(key);
+        }
+        catch(JSONException e){
             return default_str_;
         }
     }
 
-    public int try_int() throws IOException{
+    public int try_int(String key){
         try {
-            return inner_.nextInt();
-        } catch (IllegalStateException e) {
-            inner_.skipValue();
+            return inner_.getInt(key);
+        }
+        catch(JSONException e){
             return default_int_;
         }
     }
 
-    public Date try_date(String date_format) throws IOException {
+    public Date try_date(String key, String date_format)  {
 
         SimpleDateFormat formatter = new SimpleDateFormat(date_format);
         Date ret;
         try {
-            ret = formatter.parse(inner_.nextString());
-        } catch (ParseException e) {
-            inner_.skipValue();
+            try {
+                ret = formatter.parse(inner_.getString(key));
+            }
+            catch(ParseException e){
+                ret = new Date();
+            }
+        }
+        catch(JSONException e){
             ret = new Date();
         }
 
         return ret;
-    }
-
-    public void skipValue() throws IOException{
-        inner_.skipValue();
     }
 }

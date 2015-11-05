@@ -2,14 +2,18 @@ package com.amemusic.mymusic;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,7 +43,7 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
         e_ = null;
     }
 
-    private ArrayList<media_t> fetch_media(URL url) throws MalformedURLException, IOException {
+    private ArrayList<media_t> fetch_media(URL url) throws MalformedURLException, IOException, JSONException {
 
         final int BUFFER_SIZE=2048;
         char buffer []= new char[BUFFER_SIZE];
@@ -47,7 +51,13 @@ public class url_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
         try {
-            return (new my_song_reader(grid_cols_)).call(urlConnection.getInputStream());
+            StringWriter writer = new StringWriter();
+            InputStream in = urlConnection.getInputStream();
+            InputStreamReader isr = new InputStreamReader(in, "utf-8");
+            for(int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)){
+                writer.write(buffer, 0, ret);
+            }
+            return (new my_song_reader(grid_cols_)).call(writer.toString());
         }
         finally {
             urlConnection.disconnect();

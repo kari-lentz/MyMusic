@@ -1,12 +1,15 @@
 package com.amemusic.mymusic;
 
-import android.util.JsonReader;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by klentz on 10/29/15.
@@ -15,48 +18,22 @@ public class my_song_reader {
 
     private grid_cols_t grid_cols_;
 
-    private Object try_special(media_t ret, String key, Object value){
-
-        switch(key){
-            case "DTS_RELEASED":
-                ret.set_impact_dts((Date) value);
-                break;
-            case "TITLE":
-                ret.set_title((String) value);
-                break;
-            case "ARTIST":
-                ret.set_artist((String) value);
-                break;
-            case "EDIT":
-                ret.set_edit((String) value);
-                break;
-        }
-
-        return value;
-    }
-
-    private media_t consume_special(media_t ret, String key, my_json_helper helper) throws IOException{
-
-        switch(key){
-            case "MUSIC_ID":
-                ret.set_music_id(helper.try_int());
-                break;
-            default:
-                helper.skipValue();
-        }
-
-        return ret;
-    }
-
-    private media_t read_song(JsonReader reader) throws IOException {
+    private media_t read_song(JSONObject row) {
 
         media_t ret = new media_t();
-        my_json_helper helper = new my_json_helper(reader);
+        my_json_helper helper = new my_json_helper(row);
 
-        reader.beginObject();
+        ret.set_music_id(helper.try_int("MUSIC_ID"));
+        ret.set_title(helper.try_string("TITLE"));
+        ret.set_artist(helper.try_string("ARTIST"));
+        ret.set_edit(helper.try_string("EDIT"));
+        ret.set_impact_dts(helper.try_date("DTS_RELEASED", "MM/dd/yyyy"));
 
-        while (reader.hasNext()) {
-            String key = reader.nextName();
+        Iterator<String> it = row.keys();
+
+        while (it.hasNext()) {
+
+            String key = it.next();
 
             grid_col_t col = grid_cols_.get(key);
 
@@ -65,23 +42,17 @@ public class my_song_reader {
 
                 switch(type){
                     case STRING:
-                        ret.put_data(key, try_special(ret, key, helper.try_string()));
+                        ret.put_data(key, helper.try_string(key));
                         break;
                     case INT:
-                        ret.put_data(key, try_special(ret, key, helper.try_int()));
+                        ret.put_data(key, helper.try_int(key));
                         break;
                     case DATE:
-                        ret.put_data(key, try_special(ret, key, helper.try_date("MM/dd/yyyy")));
+                        ret.put_data(key, helper.try_date(key, "MM/dd/yyyy"));
                         break;
                 }
             }
-            else{
-                consume_special(ret, key, helper);
-            }
-
         }
-
-        reader.endObject();
 
         return ret;
     }
@@ -91,22 +62,16 @@ public class my_song_reader {
         grid_cols_ = grid_cols;
     }
 
-    public ArrayList<media_t> call(InputStream in) throws IOException {
+    public ArrayList<media_t> call(String in) throws JSONException {
         ArrayList<media_t> ret = new ArrayList<media_t>();
-        JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
 
-        try {
+        JSONArray rows = new JSONArray(in);
 
-            reader.beginArray();
+        int len = rows.length();
 
-            while (reader.hasNext()) {
-                ret.add(read_song(reader));
-            }
-
-            reader.endArray();
-
-        } finally {
-            reader.close();
+        for(int idx = 0; idx < len; ++idx){
+            JSONObject row = rows.getJSONObject(idx);
+            ret.add(read_song(row));
         }
 
         return ret;
