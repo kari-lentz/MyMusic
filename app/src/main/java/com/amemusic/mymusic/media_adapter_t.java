@@ -43,16 +43,28 @@ public class media_adapter_t extends BaseAdapter {
         selected_color_ = ContextCompat.getColor(context, R.color.GRID_SELECTED_BACKGROUND_COLOR);
     }
 
-    public void update_selected_pos(View view, int position){
-        view.setBackgroundColor(selected_color_);
-        selected_position_ = position;
+    public void update_unselected_pos(View view){
+        view.setBackgroundColor(default_color_);
+        if(view == selected_view_){
+            selected_view_ = null;
+        }
 
-        if(selected_view_ != null && (selected_view_ != view))
-        {
+        view.invalidate();
+    }
+
+    public void update_selected_pos(View view, int position){
+
+        view.setBackgroundColor(selected_color_);
+
+        if(selected_view_ != null && selected_view_ != view){
             selected_view_.setBackgroundColor(default_color_);
         }
 
+        selected_position_ = position;
         selected_view_ = view;
+
+        view.invalidate();
+        selected_view_.invalidate();
     }
 
     @Override
@@ -102,10 +114,10 @@ public class media_adapter_t extends BaseAdapter {
         ArrayList<ViewGroup> col_views = (ArrayList<ViewGroup>) convertView.getTag();
 
         if(position == selected_position_) {
-            convertView.setBackgroundColor(selected_color_);
+            update_selected_pos(convertView, position);
         }
-        else {
-            convertView.setBackgroundColor(default_color_);
+        else{
+            update_unselected_pos(convertView);
         }
 
         media_t media = (media_t) this.getItem(position);
