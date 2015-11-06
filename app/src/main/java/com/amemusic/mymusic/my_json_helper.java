@@ -35,7 +35,12 @@ public class my_json_helper {
 
     public String try_string(String key){
         try {
-            return inner_.getString(key);
+            if(!inner_.isNull(key)) {
+                return inner_.getString(key);
+            }
+            else {
+                return default_str_;
+            }
         }
         catch(JSONException e){
             return default_str_;
