@@ -39,7 +39,11 @@ public class resize_context_t {
         header_col_.setLayoutParams(params);
         header_col_.requestLayout();
 
-        ((BaseAdapter) lv_.getAdapter()).notifyDataSetChanged();
+        BaseAdapter adapter = (BaseAdapter) lv_.getAdapter();
+
+        if(adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
 
         mx_ = x;
     }

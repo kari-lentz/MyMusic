@@ -119,7 +119,7 @@ public class media_adapter_t extends BaseAdapter {
             ViewGroup tvl = it.next();
 
             ViewGroup.LayoutParams params = tvl.getLayoutParams();
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,params.width=col.get_width() , convertView.getResources().getDisplayMetrics());
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, col.get_width(), convertView.getResources().getDisplayMetrics());
             tvl.setLayoutParams(params);
 
             TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);

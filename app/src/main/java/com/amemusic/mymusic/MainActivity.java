@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             tv.setText(col.get_header());
 
             ViewGroup.LayoutParams params = header_col.getLayoutParams();
-            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.width = col.get_width(), header_col.getResources().getDisplayMetrics());
+            params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, col.get_width(), header_col.getResources().getDisplayMetrics());
             header_col.setLayoutParams(params);
 
             header_col.setOnTouchListener(new View.OnTouchListener() {
@@ -103,7 +103,8 @@ public class MainActivity extends AppCompatActivity {
 
                     switch (event.getActionMasked()) {
                         case MotionEvent.ACTION_DOWN:
-                            resize_context_ = new resize_context_t(lv, v, col, event.getRawX()) ;
+                            float xpos = my_core.px_to_dp(v, event.getRawX());
+                            resize_context_ = new resize_context_t(lv, v, col, xpos) ;
                             break;
                     }
 
@@ -118,19 +119,20 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if(resize_context_ != null) {
-                    TextView tv = (TextView) findViewById(R.id.txt_status);
+                    //TextView tv = (TextView) findViewById(R.id.txt_status);
+                    float xpos = my_core.px_to_dp(v, event.getRawX());
 
                     switch (event.getActionMasked()) {
 
                         case MotionEvent.ACTION_MOVE:
-                            resize_context_.call(event.getRawX());
+                             resize_context_.call(xpos);
                             break;
                         case MotionEvent.ACTION_UP:
-                            resize_context_.call(event.getRawX());
+                            resize_context_.call(xpos);
                             resize_context_ = null;
                             break;
                         case MotionEvent.ACTION_OUTSIDE:
-                            resize_context_.call(event.getRawX());
+                            resize_context_.call(xpos);
                             resize_context_ = null;
                             break;
                         default:
