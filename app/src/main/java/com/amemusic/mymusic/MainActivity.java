@@ -15,11 +15,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;;
+;
 
 import com.amemusic.mymusisc.R;
 
@@ -46,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView tv_status = (TextView) findViewById(R.id.txt_status);
         try {
-            AsyncTask task = new url_getter(this, lv, tv_status, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            AsyncTask task = new media_getter(this, lv, tv_status, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
         } catch (MalformedURLException e) {
             tv_status.setText("Incomplete URL");
         }
@@ -150,8 +149,11 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();}});
+                int position = ((media_adapter_t) lv.getAdapter()).get_selected_position();
+                media_t track = (position != -1) ? (media_t) lv.getItemAtPosition(position) : null;
+                Snackbar.make(view, track != null ? String.format("%s - %s", track.get_title(), track.get_artist()):"nothing selected", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            }});
 
         Button btn = (Button) findViewById(R.id.btn_fetch_media);
         btn.setOnClickListener(

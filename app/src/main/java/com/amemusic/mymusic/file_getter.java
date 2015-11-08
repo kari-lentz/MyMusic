@@ -1,13 +1,12 @@
-package com.amemusic.mymusic.thd_http;
+package com.amemusic.mymusic;
 
 /**
  * Created by klentz on 11/7/15.
  */
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.io.StringWriter;
 
 import java.net.HttpURLConnection;
@@ -98,7 +97,7 @@ public class file_getter {
         out_stream.seek(offset);
     }
 
-    public void call(URL url, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException{
+    public void call(URL url, File local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException{
         Authenticator.setDefault (new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(user_id_, password_.toCharArray());
@@ -144,5 +143,9 @@ public class file_getter {
         }finally{
             out_stream.close();
         }
+    }
+
+    public void call(URL url, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException {
+        call(url, new File(local_file));
     }
 }

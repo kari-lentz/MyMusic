@@ -1,8 +1,9 @@
-package com.amemusic.mymusic.thd_http;
+package com.amemusic.mymusic;
 
 /**
  * Created by klentz on 11/7/15.
  */
+import java.io.File;
 import java.io.IOException;
         import java.net.MalformedURLException;
         import java.net.URL;
@@ -17,10 +18,19 @@ class music_getter {
         base_url_ = "http://www.tophitsdirect.com/download-engine/fetch?codec=" + codec.toLowerCase();
     }
 
-    public void call(int music_id, String local_file) throws IOException, MalformedURLException, parse_exception_t, http_exception_t{
-        URL url = new URL(base_url_ + "&music-id=" + Integer.toString(music_id));
+    public void call(int music_id, File local_file) throws IOException, MalformedURLException, parse_exception_t, http_exception_t{
+        URL url = new URL(String.format("%s&music-id=%d", base_url_, music_id));
         file_getter_.call(url, local_file);
     }
+
+    public void call(int music_id, String local_file) throws IOException, MalformedURLException, parse_exception_t, http_exception_t{
+        this.call(music_id, new File(local_file));
+    }
+
+    /*
+    public void call(int music_id, String disc){
+        ext_fs.get_thd_dir();
+    }*/
 
     public static void main(String[] args) {
         try{

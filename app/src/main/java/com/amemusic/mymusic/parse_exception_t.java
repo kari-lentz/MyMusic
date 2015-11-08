@@ -1,4 +1,4 @@
-package com.amemusic.mymusic.thd_http;
+package com.amemusic.mymusic;
 
 /**
  * Created by klentz on 11/7/15.

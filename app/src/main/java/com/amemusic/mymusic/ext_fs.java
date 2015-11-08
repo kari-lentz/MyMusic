@@ -1,4 +1,4 @@
-package com.amemusic.mymusic.thd_http;
+package com.amemusic.mymusic;
 
 import android.os.Environment;
 import java.io.File;

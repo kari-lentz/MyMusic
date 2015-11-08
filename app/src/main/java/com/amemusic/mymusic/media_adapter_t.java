@@ -43,6 +43,10 @@ public class media_adapter_t extends BaseAdapter {
         selected_color_ = ContextCompat.getColor(context, R.color.GRID_SELECTED_BACKGROUND_COLOR);
     }
 
+    public int get_selected_position(){
+        return selected_position_;
+    }
+
     public void update_unselected_pos(View view){
         view.setBackgroundColor(default_color_);
         if(view == selected_view_){
