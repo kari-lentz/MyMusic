@@ -22,7 +22,7 @@ import java.util.ArrayList;
 /**
  * Created by klentz on 10/29/15.
  */
-public class media_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
+public class grid_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
 
     private Context context_;
     private ListView lv_;
@@ -31,7 +31,7 @@ public class media_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
     private grid_cols_t grid_cols_;
     Exception e_;
 
-    public media_getter(Context context, ListView lv, TextView tv_status, View header, grid_cols_t grid_cols){
+    public grid_getter(Context context, ListView lv, TextView tv_status, View header, grid_cols_t grid_cols){
         super();
 
         context_ = context;

@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView tv_status = (TextView) findViewById(R.id.txt_status);
         try {
-            AsyncTask task = new media_getter(this, lv, tv_status, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            AsyncTask task = new grid_getter(this, lv, tv_status, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
         } catch (MalformedURLException e) {
             tv_status.setText("Incomplete URL");
         }
@@ -151,8 +151,12 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 int position = ((media_adapter_t) lv.getAdapter()).get_selected_position();
                 media_t track = (position != -1) ? (media_t) lv.getItemAtPosition(position) : null;
-                Snackbar.make(view, track != null ? String.format("%s - %s", track.get_title(), track.get_artist()):"nothing selected", Snackbar.LENGTH_LONG)
+                String msg = track != null ? String.format("downloading %s - %s to %s", track.get_title(), track.get_artist(), track.get_disc()):"nothing selected";
+                Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
+
+                if(track != null){
+                }
             }});
 
         Button btn = (Button) findViewById(R.id.btn_fetch_media);

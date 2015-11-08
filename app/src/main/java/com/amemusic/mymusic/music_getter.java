@@ -27,10 +27,12 @@ class music_getter {
         this.call(music_id, new File(local_file));
     }
 
-    /*
-    public void call(int music_id, String disc){
-        ext_fs.get_thd_dir();
-    }*/
+    public void call(media_t media) throws IOException, MalformedURLException, parse_exception_t, http_exception_t, ext_fs_exception_t{
+        ext_fs.pass_writable();
+        ext_fs.pass_readable();
+        File dest_dir = ext_fs.get_thd_dir(String.format("THD/%s", media.get_disc()));
+        String local_file = String.format("%s - %s", media.get_title(), media.get_artist());
+    }
 
     public static void main(String[] args) {
         try{

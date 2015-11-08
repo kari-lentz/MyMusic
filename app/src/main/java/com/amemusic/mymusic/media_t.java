@@ -10,6 +10,7 @@ public class media_t extends Object{
 
     private int music_id_;
     private int download_;
+    private String disc_;
     private Date impact_dts_;
     private String title_;
     private String artist_;
@@ -35,6 +36,14 @@ public class media_t extends Object{
 
     public void set_download(int value){
         download_ = value;
+    }
+
+    public String get_disc(){
+        return disc_;
+    }
+
+    public void set_disc(String value){
+        disc_ = value;
     }
 
     public Date get_impact_dts(){

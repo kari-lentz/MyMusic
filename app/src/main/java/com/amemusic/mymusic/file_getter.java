@@ -145,6 +145,10 @@ public class file_getter {
         }
     }
 
+    public void call(URL url, File local_dir, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException {
+        call(url, new File(local_dir, local_file));
+    }
+
     public void call(URL url, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException {
         call(url, new File(local_file));
     }
