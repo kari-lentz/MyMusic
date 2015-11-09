@@ -115,6 +115,14 @@ public class media_t extends Object{
         return String.format("%s - %s%s%s.%s", unc_fix(title_), unc_fix(artist_), edit_str, warning_str, exts_.get(codec_));
     }
 
+    static public String get_codec(){
+        return codec_;
+    }
+
+    static public void set_codec(String value){
+        codec_ = value;
+    }
+
     public Object get_data(String key){
         return data_.get(key);
     }

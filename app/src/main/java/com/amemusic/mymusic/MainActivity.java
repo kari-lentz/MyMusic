@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING){
             //start brand new download task if previous one finished
-            download_task_ = new download_task(this, tv_status_, media_queue_, "alac", "TH_KLentz2", "tillman");
+            download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), "TH_KLentz2", "tillman");
             download_task_ .execute();
         }
     }
