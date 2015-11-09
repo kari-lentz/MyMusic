@@ -139,7 +139,9 @@ public class media_adapter_t extends BaseAdapter {
             tvl.setLayoutParams(params);
 
             TextView tv = (TextView) tvl.findViewById(R.id.lv_media_col);
-            tv.setText(col.string(media.get_data(col.get_key())));
+            tv.setText(col.string(media));
+
+            tv.setTextColor(col.get_text_color(media));
         }
 
         return convertView;

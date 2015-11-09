@@ -21,7 +21,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 ;
-
 import com.amemusic.mymusisc.R;
 
 import java.net.MalformedURLException;
@@ -83,17 +82,17 @@ public class MainActivity extends AppCompatActivity {
         final ListView lv = (ListView) findViewById(R.id.lv_media);
 
         final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
-                new grid_col_date_t("DTS_RELEASED", "Impact Date", 80),
-                new grid_col_t("TITLE", "Title", 200, grid_col_t.types_t.STRING),
-                new grid_col_t("ARTIST", "Artist", 200, grid_col_t.types_t.STRING),
-                new grid_col_t("EDIT", "Edit", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("DISC", "Disc", 70, grid_col_t.types_t.STRING),
-                new grid_col_t("LABEL", "Label", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("FORMAT", "Genre", 100, grid_col_t.types_t.STRING),
-                new grid_col_t("BPM", "BPM", 50, grid_col_t.types_t.INT),
-                new grid_col_t("INTRO", "Intro", 100, grid_col_t.types_t.INT),
-                new grid_col_t("RUN", "Run", 100, grid_col_t.types_t.INT),
-                new grid_col_t("CHART", "Chart", 100, grid_col_t.types_t.STRING)
+                new grid_col_date_t(this, "DTS_RELEASED", "Impact Date", 80),
+                new grid_col_title_t(this, 200),
+                new grid_col_t(this, "ARTIST", "Artist", 200, grid_col_t.types_t.STRING),
+                new grid_col_t(this, "EDIT", "Edit", 100, grid_col_t.types_t.STRING),
+                new grid_col_t(this, "DISC", "Disc", 70, grid_col_t.types_t.STRING),
+                new grid_col_t(this, "LABEL", "Label", 100, grid_col_t.types_t.STRING),
+                new grid_col_t(this, "FORMAT", "Genre", 100, grid_col_t.types_t.STRING),
+                new grid_col_t(this, "BPM", "BPM", 50, grid_col_t.types_t.INT),
+                new grid_col_t(this, "INTRO", "Intro", 100, grid_col_t.types_t.INT),
+                new grid_col_t(this, "RUN", "Run", 100, grid_col_t.types_t.INT),
+                new grid_col_t(this, "CHART", "Chart", 100, grid_col_t.types_t.STRING)
         });
 
         final View header= findViewById(R.id.lv_media_header);
@@ -167,9 +166,21 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int position = ((media_adapter_t) lv.getAdapter()).get_selected_position();
-                media_t media = (position != -1) ? (media_t) lv.getItemAtPosition(position) : null;
-                String msg = media != null ? String.format("downloading %s to %s", media.get_file_name(), media.get_disc()):"nothing selected";
+                media_adapter_t adapter = (media_adapter_t) lv.getAdapter();
+
+                String msg;
+                media_t media = null;
+
+                if(adapter != null) {
+                    int position = adapter.get_selected_position();
+                    media = (position != -1) ? (media_t) lv.getItemAtPosition(position) : null;
+                    msg = media != null ? String.format("downloading %s to %s", media.get_file_name(), media.get_disc()) : "nothing selected";
+                }
+                else {
+                    media = null;
+                    msg = "No media available";
+                }
+
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
                 if(media != null){

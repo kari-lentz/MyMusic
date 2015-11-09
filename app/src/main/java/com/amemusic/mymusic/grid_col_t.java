@@ -1,5 +1,10 @@
 package com.amemusic.mymusic;
 
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
+
+import com.amemusic.mymusisc.R;
+
 import java.text.SimpleDateFormat;
 
 /**
@@ -9,17 +14,20 @@ public class grid_col_t {
 
     public enum types_t{STRING, INT, FLOAT, DATE, NULL};
 
-    private String key_;
+    protected String key_;
     private String header_;
     private int width_;
     types_t type_;
+    protected int text_color_;
 
-    grid_col_t(String key, String header, int width, types_t type)
+    grid_col_t(Context context, String key, String header, int width, types_t type)
     {
         key_ = key;
         header_ = header;
         width_ = width;
         type_ = type;
+
+        text_color_ = ContextCompat.getColor(context, R.color.GRID_TEXT_COLOR);
     }
 
     public String get_key(){
@@ -42,8 +50,12 @@ public class grid_col_t {
         return type_;
     }
 
-    public String string(Object value){
-        return value.toString();
+    public String string(media_t media){
+        return media.get_data(key_).toString();
+    }
+
+    public int get_text_color(media_t media){
+        return text_color_;
     }
 }
 

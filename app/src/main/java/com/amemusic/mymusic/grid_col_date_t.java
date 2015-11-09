@@ -1,5 +1,7 @@
 package com.amemusic.mymusic;
 
+import android.content.Context;
+
 import java.text.SimpleDateFormat;
 
 /**
@@ -8,12 +10,12 @@ import java.text.SimpleDateFormat;
 
 public class grid_col_date_t extends grid_col_t{
 
-    grid_col_date_t(String key, String header, int width){
-        super(key, header, width, types_t.DATE);
+    grid_col_date_t(Context context, String key, String header, int width){
+        super(context, key, header, width, types_t.DATE);
     }
 
     @Override
-    public String string(Object value){
-        return new SimpleDateFormat("MM/dd/yyyy").format(value);
+    public String string(media_t media){
+        return new SimpleDateFormat("MM/dd/yyyy").format(media.get_data(key_));
     }
 }

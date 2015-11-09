@@ -29,6 +29,7 @@ public class my_song_reader {
         ret.set_artist(helper.try_string("ARTIST"));
         ret.set_edit(helper.try_string("EDIT"));
         ret.set_impact_dts(helper.try_date("DTS_RELEASED", "MM/dd/yyyy"));
+        ret.set_warning(helper.try_string("WARNING"));
 
         Iterator<String> it = row.keys();
 

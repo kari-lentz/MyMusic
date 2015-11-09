@@ -15,7 +15,10 @@ public class media_t extends Object{
     private String title_;
     private String artist_;
     private String edit_;
+    private String warning_;
+
     private Hashtable<String, Object> data_;
+
     private Hashtable<String, String> exts_;
 
     static private String codec_ = "alac";
@@ -78,10 +81,6 @@ public class media_t extends Object{
         return title_;
     }
 
-    public String get_file_name(){
-        return String.format("%s - %s.%s", unc_fix(title_), unc_fix(artist_), exts_.get(codec_));
-    }
-
     public void set_title(String value){
         title_ = value;
     }
@@ -100,6 +99,20 @@ public class media_t extends Object{
 
     public void set_edit(String value){
         edit_ = value;
+    }
+
+    public String get_warning(){
+        return warning_;
+    }
+
+    public void set_warning(String value){
+        warning_ = value;
+    }
+
+    public String get_file_name(){
+        String edit_str = edit_.length() > 0 ? String.format(" (%s)", unc_fix(edit_)): "";
+        String warning_str = warning_.length() > 0 ? " (Warning Content)" : "";
+        return String.format("%s - %s%s%s.%s", unc_fix(title_), unc_fix(artist_), edit_str, warning_str, exts_.get(codec_));
     }
 
     public Object get_data(String key){
