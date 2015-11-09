@@ -16,10 +16,30 @@ public class media_t extends Object{
     private String artist_;
     private String edit_;
     private Hashtable<String, Object> data_;
+    private Hashtable<String, String> exts_;
+
+    static private String codec_ = "alac";
+
+    private String unc_fix(String value){
+
+        final String replc[][] =  {{"\\",""}, {"/", ""}, {"\"", "'"}, {"?", "[Q]"}, {"$", "S"}, {":", "[colon]"}, {"*", "-"}};
+        String ret = value;
+
+        for(int idx = 0; idx < replc.length; ++idx) {
+            ret = ret.replace(replc[idx][0], replc[idx][1]);
+        }
+
+        return ret;
+    }
 
     public media_t(){
         download_ = 0;
         data_ = new Hashtable<String, Object>();
+        exts_ = new Hashtable<String, String>();
+
+        exts_.put("mp3", "mp3");
+        exts_.put("alac", "m4p");
+        exts_.put("video", "mp4");
     }
 
     public int get_music_id(){
@@ -56,6 +76,10 @@ public class media_t extends Object{
 
     public String get_title(){
         return title_;
+    }
+
+    public String get_file_name(){
+        return String.format("%s - %s.%s", unc_fix(title_), unc_fix(artist_), exts_.get(codec_));
     }
 
     public void set_title(String value){

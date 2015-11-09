@@ -18,20 +18,25 @@ class music_getter {
         base_url_ = "http://www.tophitsdirect.com/download-engine/fetch?codec=" + codec.toLowerCase();
     }
 
-    public void call(int music_id, File local_file) throws IOException, MalformedURLException, parse_exception_t, http_exception_t{
+    public void call(int music_id, File dest_dir, String local_file) throws IOException, parse_exception_t, http_exception_t{
+        URL url = new URL(String.format("%s&music-id=%d", base_url_, music_id));
+        file_getter_.call(url, dest_dir, local_file);
+    }
+
+    public void call(int music_id, File local_file) throws IOException, parse_exception_t, http_exception_t{
         URL url = new URL(String.format("%s&music-id=%d", base_url_, music_id));
         file_getter_.call(url, local_file);
     }
 
-    public void call(int music_id, String local_file) throws IOException, MalformedURLException, parse_exception_t, http_exception_t{
+    public void call(int music_id, String local_file) throws IOException, parse_exception_t, http_exception_t{
         this.call(music_id, new File(local_file));
     }
 
-    public void call(media_t media) throws IOException, MalformedURLException, parse_exception_t, http_exception_t, ext_fs_exception_t{
+    public void call(media_t media) throws IOException, parse_exception_t, http_exception_t, ext_fs_exception_t{
         ext_fs.pass_writable();
         ext_fs.pass_readable();
         File dest_dir = ext_fs.get_thd_dir(String.format("THD/%s", media.get_disc()));
-        String local_file = String.format("%s - %s", media.get_title(), media.get_artist());
+         call(media.get_music_id(), dest_dir, media.get_file_name());
     }
 
     public static void main(String[] args) {

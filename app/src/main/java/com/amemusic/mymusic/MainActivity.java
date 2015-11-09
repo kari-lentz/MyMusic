@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,16 +19,23 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 ;
 
 import com.amemusic.mymusisc.R;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity {
 
-    resize_context_t resize_context_;
+    resize_context_t resize_context_ = null;
+    ConcurrentLinkedQueue<media_t> media_queue_ = new ConcurrentLinkedQueue<>();
+    download_task download_task_ = null;
+
+    TextView tv_status_;
+
 
     private void run_view(View header, grid_cols_t grid_cols) {
 
@@ -43,11 +51,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TextView tv_status = (TextView) findViewById(R.id.txt_status);
         try {
-            AsyncTask task = new grid_getter(this, lv, tv_status, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            new grid_getter(this, lv, tv_status_, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
         } catch (MalformedURLException e) {
-            tv_status.setText("Incomplete URL");
+            tv_status_.setText("Incomplete URL");
+        }
+    }
+
+    private void start_download_task(media_t media){
+
+        media_queue_.add(media);
+
+        if(download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING){
+            //start brand new download task if previous one finished
+            download_task_ = new download_task(this, tv_status_, media_queue_, "alac", "TH_KLentz2", "tillman");
+            download_task_ .execute();
         }
     }
 
@@ -59,8 +77,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        tv_status_ = (TextView) findViewById(R.id.txt_status);
+
         final Context context = this;
-        resize_context_ = null;
         final ListView lv = (ListView) findViewById(R.id.lv_media);
 
         final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
@@ -118,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if(resize_context_ != null) {
-                    //TextView tv = (TextView) findViewById(R.id.txt_status);
                     float xpos = my_core.px_to_dp(v, event.getRawX());
 
                     switch (event.getActionMasked()) {
@@ -150,12 +168,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int position = ((media_adapter_t) lv.getAdapter()).get_selected_position();
-                media_t track = (position != -1) ? (media_t) lv.getItemAtPosition(position) : null;
-                String msg = track != null ? String.format("downloading %s - %s to %s", track.get_title(), track.get_artist(), track.get_disc()):"nothing selected";
-                Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+                media_t media = (position != -1) ? (media_t) lv.getItemAtPosition(position) : null;
+                String msg = media != null ? String.format("downloading %s to %s", media.get_file_name(), media.get_disc()):"nothing selected";
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
-                if(track != null){
+                if(media != null){
+                    start_download_task(media);
                 }
             }});
 
