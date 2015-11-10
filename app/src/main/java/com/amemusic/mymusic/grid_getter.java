@@ -53,7 +53,7 @@ public class grid_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
         try {
             StringWriter writer = new StringWriter();
             InputStream in = urlConnection.getInputStream();
-            InputStreamReader isr = new InputStreamReader(in, "utf-8");
+            InputStreamReader isr = new InputStreamReader(in, "latin1");
             for(int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)){
                 writer.write(buffer, 0, ret);
             }
