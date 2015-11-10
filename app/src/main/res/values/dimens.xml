@@ -4,4 +4,5 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="CONTROL_LABEL_FONT_SIZE">18sp</dimen>
+    <dimen name="TXT_MIN_WIDTH">150sp</dimen>
 </resources>

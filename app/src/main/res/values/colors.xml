@@ -6,9 +6,10 @@
     <color name="BTN_TEXT_COLOR">#1111ff</color>
     <color name="LBL_TEXT_COLOR">#dd2222</color>
     <color name="CONTROL_LABEL_COLOR">#005500</color>
-    <color name="GRID_BACKGROUND_COLOR">#228844</color>
+    <color name="GRID_BACKGROUND_COLOR">#222222</color>
     <color name="GRID_SELECTED_BACKGROUND_COLOR">#8888ff</color>
     <color name="GRID_TEXT_COLOR">#ffffff</color>
     <color name="GRID_CONTENT_WARNING_TEXT_COLOR">#ff0000</color>
-    <color name="GRID_HEADER_BACKGROUND_COLOR">#114422</color>
+    <color name="GRID_HEADER_BACKGROUND_COLOR">#444488</color>
+    <color name="USER_TEXT_COLOR">#000000</color>
 </resources>
