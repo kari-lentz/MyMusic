@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.amemusic.mymusisc.R;
+import com.amemusic.mymusic.R;
 
 import java.util.ArrayList;
 import java.util.Iterator;

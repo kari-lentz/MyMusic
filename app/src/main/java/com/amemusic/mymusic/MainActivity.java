@@ -21,7 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 ;
-import com.amemusic.mymusisc.R;
+import com.amemusic.mymusic.R;
 
 import java.net.MalformedURLException;
 import java.net.URL;

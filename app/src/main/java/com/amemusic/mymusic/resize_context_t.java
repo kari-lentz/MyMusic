@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
-import com.amemusic.mymusisc.R;
+import com.amemusic.mymusic.R;
 
 /**
  * Created by klentz on 11/3/15.

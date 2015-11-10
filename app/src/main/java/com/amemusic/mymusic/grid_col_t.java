@@ -3,7 +3,7 @@ package com.amemusic.mymusic;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 
-import com.amemusic.mymusisc.R;
+import com.amemusic.mymusic.R;
 
 import java.text.SimpleDateFormat;
 
