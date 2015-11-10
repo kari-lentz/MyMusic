@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@color/GRID_BACKGROUND_COLOR"
-    android:gravity="center">
+    android:gravity="center"
+    tools:context="com.amemusic.mymusic.LoginActivity">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
@@ -38,10 +40,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/txt_user_id"
+                    android:hint="User Id"
                     android:layout_column="2"
                     android:minWidth="@dimen/TXT_MIN_WIDTH"
                     android:textColor="@color/USER_TEXT_COLOR"
-                    android:background="@color/GRID_TEXT_COLOR" />
+                    android:background="@color/GRID_TEXT_COLOR"
+                    android:textStyle="bold" />
             </TableRow>
 
             <TableRow
@@ -65,10 +69,12 @@
                     android:inputType="textPassword"
                     android:ems="10"
                     android:id="@+id/txt_password"
+                    android:hint="Password"
                     android:layout_column="2"
                     android:minWidth="@dimen/TXT_MIN_WIDTH"
                     android:textColor="@color/USER_TEXT_COLOR"
-                    android:background="@color/GRID_TEXT_COLOR" />
+                    android:background="@color/GRID_TEXT_COLOR"
+                    android:textStyle="bold" />
 
             </TableRow>
         </TableLayout>
@@ -77,12 +83,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Remember Password"
             android:id="@+id/chk_remember_password"
             android:checked="true"
             android:textStyle="bold"
             android:layout_gravity="right"
-            android:textColor="@color/GRID_TEXT_COLOR" />
+            android:textColor="@color/GRID_TEXT_COLOR"
+            android:hint="Remember Password"
+            android:textColorHint="@color/GRID_TEXT_COLOR"
+            android:contextClickable="false"
+            android:shadowColor="#ffffff"
+            android:buttonTint="@color/GRID_TEXT_COLOR" />
 
         <Button
             android:layout_width="wrap_content"
