@@ -29,12 +29,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity {
 
+    String user_id_;
+    String password_;
     resize_context_t resize_context_ = null;
     ConcurrentLinkedQueue<media_t> media_queue_ = new ConcurrentLinkedQueue<>();
     download_task download_task_ = null;
 
     TextView tv_status_;
-
 
     private void run_view(View header, grid_cols_t grid_cols) {
 
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         try {
-            new grid_getter(this, lv, tv_status_, header, grid_cols).execute(new URL("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=TH_KLentz2&json=t"));
+            new grid_getter(this, lv, tv_status_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=%s2&json=t", user_id_)));
         } catch (MalformedURLException e) {
             tv_status_.setText("Incomplete URL");
         }
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING){
             //start brand new download task if previous one finished
-            download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), "TH_KLentz2", "tillman");
+            download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), user_id_, password_);
             download_task_ .execute();
         }
     }
@@ -71,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        user_id_ = getIntent().getStringExtra(String.format("%s.user_id", this.getPackageName()));
+        password_ = getIntent().getStringExtra(String.format("%s.password", this.getPackageName()));
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

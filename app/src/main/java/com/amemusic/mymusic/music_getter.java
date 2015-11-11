@@ -39,13 +39,4 @@ class music_getter {
          call(media.get_music_id(), dest_dir, media.get_file_name());
     }
 
-    public static void main(String[] args) {
-        try{
-            music_getter my_getter = new music_getter("alac", "TH_KLentz2", "tillman");
-            my_getter.call(1208557, "temp.m4p");
-        }
-        catch(Exception e){
-            System.out.println("caught exception:" + e.toString());
-        }
-    }
 }

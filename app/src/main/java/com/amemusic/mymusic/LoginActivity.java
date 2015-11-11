@@ -165,6 +165,8 @@ public class LoginActivity extends AppCompatActivity {
 
             if(success_p){
                 Intent intent = new Intent(context_, MainActivity.class);
+                intent.putExtra(String.format("%s.user_id", context_.getPackageName()), user_id_);
+                intent.putExtra(String.format("%s.password", context_.getPackageName()), password_);
                 startActivity(intent);
             }
 
