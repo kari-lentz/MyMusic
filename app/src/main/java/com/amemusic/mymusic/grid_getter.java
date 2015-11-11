@@ -2,11 +2,11 @@ package com.amemusic.mymusic;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -94,9 +94,10 @@ public class grid_getter extends AsyncTask<URL, Integer, ArrayList<media_t>> {
             lv_.setAdapter(adapter);
         }else {
             tv_status_.setText("Server Error");
-            Toast.makeText(context_,
-                    e_.toString(), Toast.LENGTH_LONG)
-                    .show();
+
+            Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+
         }
     }
 

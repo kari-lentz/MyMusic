@@ -11,9 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-/**
- * Created by klentz on 11/8/15.
- */
 public class download_task extends AsyncTask<Void, media_t, Integer> {
 
     Context context_;
@@ -72,8 +69,6 @@ public class download_task extends AsyncTask<Void, media_t, Integer> {
             tv_status_.setText("Server Error");
             Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
-
-
         }
     }
 }

@@ -12,4 +12,5 @@
     <color name="GRID_CONTENT_WARNING_TEXT_COLOR">#ff0000</color>
     <color name="GRID_HEADER_BACKGROUND_COLOR">#444488</color>
     <color name="USER_TEXT_COLOR">#000000</color>
+    <color name="STATUS_COLOR">#ffa500</color>
 </resources>
