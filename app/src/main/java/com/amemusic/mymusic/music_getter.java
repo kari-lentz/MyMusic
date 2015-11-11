@@ -39,4 +39,8 @@ class music_getter {
          call(media.get_music_id(), dest_dir, media.get_file_name());
     }
 
+    public music_getter progress(progress_i progress){
+        file_getter_.progress(progress);
+        return this;
+    }
 }

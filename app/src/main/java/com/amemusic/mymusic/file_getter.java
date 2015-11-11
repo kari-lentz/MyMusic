@@ -19,6 +19,8 @@ public class file_getter {
 
     private String user_id_;
     private String password_;
+    progress_i progress_ = null;
+    private int total_ = 0;
 
     private StringWriter temp_writer_;
 
@@ -34,6 +36,11 @@ public class file_getter {
         password_ = password;
 
         temp_writer_ = new StringWriter();
+    }
+
+    file_getter progress(progress_i progress){
+        progress_ = progress;
+        return this;
     }
 
     private String verify_field(InputStream in_stream, String command) throws IOException, parse_exception_t{
@@ -77,6 +84,10 @@ public class file_getter {
         final int BUFFER_SIZE = 65536;
         byte[] buffer = new byte[BUFFER_SIZE];
 
+        if(total_ == 0) {
+            total_ = total_remaining;
+        }
+
         verify_field(in_stream, "payload");
 
         int remaining = size;
@@ -89,6 +100,10 @@ public class file_getter {
 
             out_stream.write(buffer, 0, ret_bytes);
             remaining -= ret_bytes;
+        }
+
+        if(progress_ != null){
+            progress_.doProgressRecord(total_ - total_remaining + size, total_);
         }
     }
 

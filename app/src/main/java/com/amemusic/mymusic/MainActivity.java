@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     download_task download_task_ = null;
 
     TextView tv_status_;
+    ProgressBar progress_bar_;
 
     private void run_view(View header, grid_cols_t grid_cols) {
 
@@ -87,8 +89,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         tv_status_ = (TextView) findViewById(R.id.txt_status);
+        progress_bar_ = (ProgressBar) findViewById(R.id.progress_download);
 
-        final Context context = this;
         final ListView lv = (ListView) findViewById(R.id.lv_media);
 
         final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
@@ -313,10 +315,30 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-
     }
 
-    public class download_task extends AsyncTask<Void, media_t, Integer> {
+    class task_progress_t{
+
+        private String name_;
+        private int progress_;
+        private int total_;
+
+        task_progress_t(String name, int progress, int total){
+            name_ = name;
+            progress_ = progress;
+            total_ = total;
+        }
+
+        int get_progress_percent(){
+            return (progress_ / 1024) * 100 / (total_ / 1024);
+        }
+
+        String get_name(){
+            return name_;
+        }
+    }
+
+    public class download_task extends AsyncTask<Void, task_progress_t, Integer> implements progress_i{
 
         Context context_;
         TextView tv_status_;
@@ -327,21 +349,30 @@ public class MainActivity extends AppCompatActivity {
         int ctr_ = 0;
         String tag_ = "download_task";
 
+        String current_file_ = null;
+
         download_task(Context context, TextView tv_status, ConcurrentLinkedQueue<media_t> queue, String codec, String user_id, String password){
             super();
 
             context_ = context;
             tv_status_ = tv_status;
             queue_ = queue;
-            music_getter_ = new music_getter(codec, user_id, password);
+            music_getter_ = new music_getter(codec, user_id, password).progress(this);
         }
 
         @Override
-        protected void onProgressUpdate(media_t ... media_list){
-            if(media_list.length > 0) {
-                media_t media = media_list[0];
-                tv_status_.setText(String.format("Downloading %s", media.get_file_name()));
+        protected void onProgressUpdate(task_progress_t ... progress){
+
+            if(progress.length > 0) {
+                tv_status_.setText(String.format("Downloading %s", progress[0].get_name()));
+                progress_bar_.setProgress(progress[0].get_progress_percent());
             }
+        }
+
+        @Override
+        public void doProgressRecord(int progress, int total){
+            //Log.i("DOWNLOAD TASK", String.format("PROGRESS:%d of %d", progress, total));
+            publishProgress(new task_progress_t(current_file_ != null ? current_file_:"Unknown", progress, total));
         }
 
         @Override
@@ -351,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
             try{
                 while((media = queue_.poll()) != null){
                     Log.i(tag_, String.format("downloading %s", media.get_file_name()));
-                    publishProgress(media);
+                    current_file_ = media.get_file_name();
                     music_getter_.call(media);
                     Log.i(tag_, String.format("downloaded %s", media.get_file_name()));
                     ctr_++;
