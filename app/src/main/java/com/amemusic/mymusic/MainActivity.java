@@ -20,11 +20,17 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-;
-import com.amemusic.mymusic.R;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         try {
-            new grid_getter(this, lv, tv_status_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=%s2&json=t", user_id_)));
+            new grid_task(this, lv, tv_status_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=%s2&json=t", user_id_)));
         } catch (MalformedURLException e) {
             tv_status_.setText("Incomplete URL");
         }
@@ -224,5 +230,151 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Created by klentz on 10/29/15.
+     */
+    public class grid_task extends AsyncTask<URL, Integer, ArrayList<media_t>> {
+
+        private Context context_;
+        private ListView lv_;
+        private TextView tv_status_;
+        private View header_;
+        private grid_cols_t grid_cols_;
+        Exception e_;
+
+        public grid_task(Context context, ListView lv, TextView tv_status, View header, grid_cols_t grid_cols){
+            super();
+
+            context_ = context;
+            lv_ = lv;
+            tv_status_ = tv_status;
+            header_ = header;
+            grid_cols_ = grid_cols;
+
+            e_ = null;
+        }
+
+        private ArrayList<media_t> fetch_media(URL url) throws MalformedURLException, IOException, JSONException {
+
+            final int BUFFER_SIZE=2048;
+            char buffer []= new char[BUFFER_SIZE];
+
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+            try {
+                StringWriter writer = new StringWriter();
+                InputStream in = urlConnection.getInputStream();
+                InputStreamReader isr = new InputStreamReader(in, "latin1");
+                for(int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)){
+                    writer.write(buffer, 0, ret);
+                }
+                return (new my_song_reader(grid_cols_)).call(writer.toString());
+            }
+            finally {
+                urlConnection.disconnect();
+            }
+        }
+
+        @Override
+        protected ArrayList<media_t> doInBackground(URL ... urls){
+
+            ArrayList<media_t> ret;
+
+            try {
+                ret=fetch_media(urls[0]);
+                e_ = null;
+            }catch(Exception e) {
+                ret = new ArrayList<media_t>();
+                e_ = e;
+            }
+
+            return ret;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<media_t> media_list){
+
+            if(e_ == null) {
+
+                ViewGroup.LayoutParams params = header_.getLayoutParams();
+                params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                header_.setLayoutParams(params);
+
+                media_adapter_t adapter = new media_adapter_t(context_, grid_cols_, media_list);
+                tv_status_.setText("Ready");
+                lv_.setAdapter(adapter);
+            }else {
+                tv_status_.setText("Server Error");
+
+                Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+
+            }
+        }
+
+    }
+
+    public class download_task extends AsyncTask<Void, media_t, Integer> {
+
+        Context context_;
+        TextView tv_status_;
+        ConcurrentLinkedQueue<media_t> queue_;
+
+        music_getter music_getter_;
+        Exception e_ = null;
+        int ctr_ = 0;
+        String tag_ = "download_task";
+
+        download_task(Context context, TextView tv_status, ConcurrentLinkedQueue<media_t> queue, String codec, String user_id, String password){
+            super();
+
+            context_ = context;
+            tv_status_ = tv_status;
+            queue_ = queue;
+            music_getter_ = new music_getter(codec, user_id, password);
+        }
+
+        @Override
+        protected void onProgressUpdate(media_t ... media_list){
+            if(media_list.length > 0) {
+                media_t media = media_list[0];
+                tv_status_.setText(String.format("Downloading %s", media.get_file_name()));
+            }
+        }
+
+        @Override
+        protected Integer doInBackground(Void ... params){
+            media_t media;
+
+            try{
+                while((media = queue_.poll()) != null){
+                    Log.i(tag_, String.format("downloading %s", media.get_file_name()));
+                    publishProgress(media);
+                    music_getter_.call(media);
+                    Log.i(tag_, String.format("downloaded %s", media.get_file_name()));
+                    ctr_++;
+                }
+            }
+            catch(Exception e){
+                e_ = e;
+            }
+
+            return ctr_;
+        }
+
+        @Override
+        protected void onPostExecute(Integer num_files){
+            if(e_ == null){
+                tv_status_.setText(String.format("Finished downloading %d files", num_files));
+            }
+            else{
+                Log.e(tag_, e_.toString());
+                tv_status_.setText("Server Error");
+                Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        }
     }
 }
