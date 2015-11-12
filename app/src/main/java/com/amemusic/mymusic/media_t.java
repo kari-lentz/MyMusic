@@ -8,8 +8,11 @@ import java.util.Hashtable;
  */
 public class media_t extends Object{
 
+    enum states_t {PENDING, DOWNLOADING, DOWNLOADED, MAX_DOWNLOADS, NOT_ACTIVATED, PAYMENT_MISSING}
+
+    private auth_block_t auth_block_;
+
     private int music_id_;
-    private int download_;
     private String disc_;
     private Date impact_dts_;
     private String title_;
@@ -17,6 +20,9 @@ public class media_t extends Object{
     private String edit_;
     private String warning_;
     private Date process_dts_;
+    private int credits_used_;
+    private int total_credits_;
+    private Boolean downloading_p_ = false;
 
     private Hashtable<String, Object> data_;
 
@@ -36,8 +42,9 @@ public class media_t extends Object{
         return ret;
     }
 
-    public media_t(){
-        download_ = 0;
+    public media_t(auth_block_t auth_block){
+        auth_block_ = auth_block;
+
         data_ = new Hashtable<String, Object>();
         exts_ = new Hashtable<String, String>();
 
@@ -52,14 +59,6 @@ public class media_t extends Object{
 
     public void set_music_id(int value){
         music_id_ = value;
-    }
-
-    public int get_download(){
-        return download_;
-    }
-
-    public void set_download(int value){
-        download_ = value;
     }
 
     public String get_disc(){
@@ -113,6 +112,40 @@ public class media_t extends Object{
     public Date get_process_date(){return process_dts_;}
 
     public void set_process_date(Date process_dts){process_dts_ = process_dts;}
+
+    public void set_credits_used(int value){
+         credits_used_ = value;}
+
+    public void set_total_credits(int value){total_credits_ = value;}
+
+    public states_t get_download(){
+        states_t ret;
+
+        if(auth_block_.is_payment_missing(this)){
+            ret = states_t.PAYMENT_MISSING;
+        }
+        else if(downloading_p_){
+            ret = states_t.DOWNLOADING;
+        }
+        else if(credits_used_ >= total_credits_)
+        {
+            ret = states_t.MAX_DOWNLOADS;
+        }
+        else if( credits_used_ == 0 )
+        {
+            ret = states_t.PENDING;
+        }
+        else
+        {
+            ret = states_t.DOWNLOADED;
+        }
+
+        return ret;
+    }
+
+    public void set_downloading(Boolean value){
+        downloading_p_ = value;
+    }
 
     public String get_file_name(){
         String edit_str = edit_.length() > 0 ? String.format(" (%s)", unc_fix(edit_)): "";

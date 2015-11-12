@@ -2,6 +2,7 @@ package com.amemusic.mymusic;
 
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -142,6 +143,7 @@ public class media_adapter_t extends BaseAdapter {
             tv.setText(col.string(media));
 
             tv.setTextColor(col.get_text_color(media));
+            tv.setTypeface(tv.getTypeface(), col.get_typeface(media));
         }
 
         return convertView;

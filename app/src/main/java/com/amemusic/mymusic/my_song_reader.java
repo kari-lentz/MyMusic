@@ -16,11 +16,12 @@ import java.util.Iterator;
  */
 public class my_song_reader {
 
+    private auth_block_t auth_block_;
     private grid_cols_t grid_cols_;
 
     private media_t read_song(JSONObject row) {
 
-        media_t ret = new media_t();
+        media_t ret = new media_t(auth_block_);
         my_json_helper helper = new my_json_helper(row);
 
         ret.set_music_id(helper.try_int("MUSIC_ID"));
@@ -30,7 +31,9 @@ public class my_song_reader {
         ret.set_edit(helper.try_string("EDIT"));
         ret.set_impact_dts(helper.try_date("DTS_RELEASED", "MM/dd/yyyy"));
         ret.set_warning(helper.try_string("WARNING"));
-        ret.set_process_date(helper.try_date("PROCESS_DATE_REAL", "yyyyy/MM/dd hh:mm:ss"));
+        ret.set_process_date(helper.try_date("PROCESS_DATE", "yyyyy-MM-dd hh:mm:ss"));
+        ret.set_credits_used(helper.try_int("CREDITS_USED"));
+        ret.set_total_credits(helper.try_int("TOTAL_CREDITS"));
 
         Iterator<String> it = row.keys();
 
@@ -60,8 +63,9 @@ public class my_song_reader {
         return ret;
     }
 
-    public my_song_reader(grid_cols_t grid_cols)
+    public my_song_reader(auth_block_t auth_block, grid_cols_t grid_cols)
     {
+        auth_block_ = auth_block;
         grid_cols_ = grid_cols;
     }
 

@@ -41,7 +41,7 @@ public class auth_block_t implements java.io.Serializable{
         return user_id_;
     }
 
-    Boolean is_restricted(media_t media){
+    Boolean is_payment_missing(media_t media){
         Boolean ret = true;
         Date process_date = media.get_process_date();
 

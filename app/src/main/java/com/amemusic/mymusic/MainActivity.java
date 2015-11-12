@@ -36,23 +36,23 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity {
 
-    String user_id_;
+    auth_block_t auth_block_;
     String password_;
     resize_context_t resize_context_ = null;
     ConcurrentLinkedQueue<media_t> media_queue_ = new ConcurrentLinkedQueue<>();
     download_task download_task_ = null;
 
     TextView tv_status_;
+    ListView lv_;
     ProgressBar progress_bar_;
 
     private void run_view(View header, grid_cols_t grid_cols) {
 
-        final ListView lv = (ListView) findViewById(R.id.lv_media);
 
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        lv_.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                media_adapter_t adapter = ((media_adapter_t) lv.getAdapter());
+                media_adapter_t adapter = ((media_adapter_t) lv_.getAdapter());
                 if(adapter != null){
                     adapter.update_selected_pos(view, position);
                 }
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         try {
-            new grid_task(this, lv, tv_status_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=%s2&json=t", user_id_)));
+            new grid_task(this, auth_block_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=%s&json=t", auth_block_.get_user_id())));
         } catch (MalformedURLException e) {
             tv_status_.setText("Incomplete URL");
         }
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING){
             //start brand new download task if previous one finished
-            download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), user_id_, password_);
+            download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), auth_block_.get_user_id(), password_);
             download_task_ .execute();
         }
     }
@@ -81,8 +81,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        auth_block_t auth_block = (auth_block_t) getIntent().getSerializableExtra(String.format("%s.auth_block", this.getPackageName()));
-        user_id_ = auth_block.get_user_id();
+        auth_block_ = (auth_block_t) getIntent().getSerializableExtra(String.format("%s.auth_block", this.getPackageName()));
         password_ = getIntent().getStringExtra(String.format("%s.password", this.getPackageName()));
 
         setContentView(R.layout.activity_main);
@@ -91,10 +90,12 @@ public class MainActivity extends AppCompatActivity {
 
         tv_status_ = (TextView) findViewById(R.id.txt_status);
         progress_bar_ = (ProgressBar) findViewById(R.id.progress_download);
+        lv_= (ListView) findViewById(R.id.lv_media);
 
         final ListView lv = (ListView) findViewById(R.id.lv_media);
 
         final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
+                new grid_col_download_t(this, auth_block_, 150),
                 new grid_col_date_t(this, "DTS_RELEASED", "Impact Date", 80),
                 new grid_col_title_t(this, 200),
                 new grid_col_t(this, "ARTIST", "Artist", 200, grid_col_t.types_t.STRING),
@@ -241,18 +242,16 @@ public class MainActivity extends AppCompatActivity {
     public class grid_task extends AsyncTask<URL, Integer, ArrayList<media_t>> {
 
         private Context context_;
-        private ListView lv_;
-        private TextView tv_status_;
+        private auth_block_t auth_block_;
         private View header_;
         private grid_cols_t grid_cols_;
         Exception e_;
 
-        public grid_task(Context context, ListView lv, TextView tv_status, View header, grid_cols_t grid_cols){
+        public grid_task(Context context, auth_block_t auth_block, View header, grid_cols_t grid_cols){
             super();
 
             context_ = context;
-            lv_ = lv;
-            tv_status_ = tv_status;
+            auth_block_ = auth_block;
             header_ = header;
             grid_cols_ = grid_cols;
 
@@ -273,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 for(int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)){
                     writer.write(buffer, 0, ret);
                 }
-                return (new my_song_reader(grid_cols_)).call(writer.toString());
+                return (new my_song_reader(auth_block_, grid_cols_)).call(writer.toString());
             }
             finally {
                 urlConnection.disconnect();
@@ -320,12 +319,12 @@ public class MainActivity extends AppCompatActivity {
 
     class task_progress_t{
 
-        private String name_;
+        private media_t media_;
         private int progress_;
         private int total_;
 
-        task_progress_t(String name, int progress, int total){
-            name_ = name;
+        task_progress_t(media_t media, int progress, int total){
+            media_ = media;
             progress_ = progress;
             total_ = total;
         }
@@ -334,8 +333,8 @@ public class MainActivity extends AppCompatActivity {
             return (progress_ / 1024) * 100 / (total_ / 1024);
         }
 
-        String get_name(){
-            return name_;
+        media_t get_media(){
+            return media_;
         }
     }
 
@@ -350,7 +349,7 @@ public class MainActivity extends AppCompatActivity {
         int ctr_ = 0;
         String tag_ = "download_task";
 
-        String current_file_ = null;
+        media_t current_media_ = null;
 
         download_task(Context context, TextView tv_status, ConcurrentLinkedQueue<media_t> queue, String codec, String user_id, String password){
             super();
@@ -365,7 +364,10 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(task_progress_t ... progress){
 
             if(progress.length > 0) {
-                tv_status_.setText(String.format("Downloading %s", progress[0].get_name()));
+                task_progress_t progress_inst = progress[0];
+                media_t media = progress_inst.get_media();
+
+                tv_status_.setText(String.format("Downloading %s", media.get_file_name()));
                 progress_bar_.setProgress(progress[0].get_progress_percent());
             }
         }
@@ -373,7 +375,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void doProgressRecord(int progress, int total){
             //Log.i("DOWNLOAD TASK", String.format("PROGRESS:%d of %d", progress, total));
-            publishProgress(new task_progress_t(current_file_ != null ? current_file_ : "Unknown", progress, total));
+            if(current_media_ != null){
+                publishProgress(new task_progress_t(current_media_, progress, total));
+            }
         }
 
         @Override
@@ -383,7 +387,8 @@ public class MainActivity extends AppCompatActivity {
             try{
                 while((media = queue_.poll()) != null){
                     Log.i(tag_, String.format("downloading %s", media.get_file_name()));
-                    current_file_ = media.get_file_name();
+                    //publishProgress(new task_progress_t(media, 0, 100));
+                    current_media_ = media;
                     music_getter_.call(media);
                     Log.i(tag_, String.format("downloaded %s", media.get_file_name()));
                     ctr_++;

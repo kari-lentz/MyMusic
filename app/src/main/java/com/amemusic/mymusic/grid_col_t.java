@@ -1,6 +1,7 @@
 package com.amemusic.mymusic;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 
 import com.amemusic.mymusic.R;
@@ -19,6 +20,7 @@ public class grid_col_t {
     private int width_;
     types_t type_;
     protected int text_color_;
+    protected int typeface_ = Typeface.NORMAL;
 
     grid_col_t(Context context, String key, String header, int width, types_t type)
     {
@@ -57,5 +59,7 @@ public class grid_col_t {
     public int get_text_color(media_t media){
         return text_color_;
     }
+
+    public int get_typeface(media_t media) {return typeface_;}
 }
 
