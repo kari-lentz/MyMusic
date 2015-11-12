@@ -317,28 +317,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class task_progress_t{
-
-        private media_t media_;
-        private int progress_;
-        private int total_;
-
-        task_progress_t(media_t media, int progress, int total){
-            media_ = media;
-            progress_ = progress;
-            total_ = total;
-        }
-
-        int get_progress_percent(){
-            return (progress_ / 1024) * 100 / (total_ / 1024);
-        }
-
-        media_t get_media(){
-            return media_;
-        }
+    interface task_progress_i{
+        void call();
     }
 
-    public class download_task extends AsyncTask<Void, task_progress_t, Integer> implements progress_i{
+    public class download_task extends AsyncTask<Void, task_progress_i, Integer> implements progress_i{
 
         Context context_;
         TextView tv_status_;
@@ -361,22 +344,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onProgressUpdate(task_progress_t ... progress){
+        protected void onProgressUpdate(task_progress_i ... progress){
 
             if(progress.length > 0) {
-                task_progress_t progress_inst = progress[0];
-                media_t media = progress_inst.get_media();
-
-                tv_status_.setText(String.format("Downloading %s", media.get_file_name()));
-                progress_bar_.setProgress(progress[0].get_progress_percent());
+                progress[0].call();
             }
         }
 
         @Override
-        public void doProgressRecord(int progress, int total){
+        public void doProgressRecord(final int progress, final int total){
             //Log.i("DOWNLOAD TASK", String.format("PROGRESS:%d of %d", progress, total));
             if(current_media_ != null){
-                publishProgress(new task_progress_t(current_media_, progress, total));
+
+                publishProgress(new task_progress_i() {
+                    @Override
+                    public void call() {
+
+                        int percent = (progress >= 1024 && total >= 1024) ? (progress / 1024) * 100 / (total / 1024) : 0;
+
+                         progress_bar_.setProgress(percent);
+                    }
+                });
+
             }
         }
 
@@ -386,11 +375,42 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 while((media = queue_.poll()) != null){
-                    Log.i(tag_, String.format("downloading %s", media.get_file_name()));
-                    //publishProgress(new task_progress_t(media, 0, 100));
+                    final String file_name = media.get_file_name();
+                    final media_t my_media = media;
+
+                    Log.i(tag_, String.format("downloading %s", file_name));
+                    publishProgress(new task_progress_i() {
+                        @Override
+                        public void call() {
+                            tv_status_.setText(String.format("Downloading %s", file_name));
+                            progress_bar_.setProgress(0);
+                            my_media.flag_downloading();
+
+                            media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
+                            if(adapter != null){
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    });
+
                     current_media_ = media;
                     music_getter_.call(media);
+
                     Log.i(tag_, String.format("downloaded %s", media.get_file_name()));
+                    publishProgress(new task_progress_i() {
+                        @Override
+                        public void call() {
+                            tv_status_.setText(String.format("Downloaded %s", file_name));
+                            progress_bar_.setProgress(100);
+                            my_media.flag_downloaded();
+
+                            media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
+                            if(adapter != null) {
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    });
+
                     ctr_++;
                 }
             }

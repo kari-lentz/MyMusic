@@ -143,8 +143,13 @@ public class media_t extends Object{
         return ret;
     }
 
-    public void set_downloading(Boolean value){
-        downloading_p_ = value;
+    public void flag_downloading(){
+         downloading_p_  = true;
+    }
+
+    public void flag_downloaded(){
+        downloading_p_ = false;
+        ++credits_used_;
     }
 
     public String get_file_name(){
