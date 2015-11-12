@@ -81,7 +81,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        user_id_ = getIntent().getStringExtra(String.format("%s.user_id", this.getPackageName()));
+        auth_block_t auth_block = (auth_block_t) getIntent().getSerializableExtra(String.format("%s.auth_block", this.getPackageName()));
+        user_id_ = auth_block.get_user_id();
         password_ = getIntent().getStringExtra(String.format("%s.password", this.getPackageName()));
 
         setContentView(R.layout.activity_main);
@@ -372,7 +373,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void doProgressRecord(int progress, int total){
             //Log.i("DOWNLOAD TASK", String.format("PROGRESS:%d of %d", progress, total));
-            publishProgress(new task_progress_t(current_file_ != null ? current_file_:"Unknown", progress, total));
+            publishProgress(new task_progress_t(current_file_ != null ? current_file_ : "Unknown", progress, total));
         }
 
         @Override

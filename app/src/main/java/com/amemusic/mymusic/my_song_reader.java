@@ -30,6 +30,7 @@ public class my_song_reader {
         ret.set_edit(helper.try_string("EDIT"));
         ret.set_impact_dts(helper.try_date("DTS_RELEASED", "MM/dd/yyyy"));
         ret.set_warning(helper.try_string("WARNING"));
+        ret.set_process_date(helper.try_date("PROCESS_DATE_REAL", "yyyyy/MM/dd hh:mm:ss"));
 
         Iterator<String> it = row.keys();
 

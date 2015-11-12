@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -71,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, auth_block_t> {
 
         private final Context context_;
         private final String user_id_;
@@ -86,12 +87,12 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected auth_block_t doInBackground(Void... params) {
 
             final int BUFFER_SIZE=2048;
             char buffer []= new char[BUFFER_SIZE];
             e_ = null;
-            Boolean ret = false;
+            auth_block_t ret = null;
 
             try {
                 // TODO: attempt authentication against a network service.
@@ -106,27 +107,27 @@ public class LoginActivity extends AppCompatActivity {
                     for(int ret_bytes = isr.read(buffer, 0, BUFFER_SIZE); ret_bytes != -1; ret_bytes = isr.read(buffer, 0, BUFFER_SIZE)){
                         writer.write(buffer, 0, ret_bytes);
                     }
-                    JSONObject auth_block = new JSONObject(writer.toString());
-                    my_json_helper helper = new my_json_helper(auth_block);
+                    JSONObject json_auth_block = new JSONObject(writer.toString());
+                    my_json_helper helper = new my_json_helper(json_auth_block);
 
                     String status = helper.try_string("status");
 
                     switch(status){
                         case "YES":
                             status_msg_="Login successful";
-                            ret = true;
+                            ret = new auth_block_t().read(json_auth_block);
                             break;
                         case "EXPIRED":
-                            ret = false;
+                            ret = null;
                             status_msg_ = "Accout expired.  Call 800-521-2537";
                             break;
                         case "NO":
                             status_msg_ = "Login Failure";
-                            ret = false;
+                            ret = null;
                             break;
                         default:
                             status_msg_="Server Error";
-                            ret = false;
+                            ret = null;
                             break;
                     }
 
@@ -144,7 +145,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(final Boolean success_p) {
+        protected void onPostExecute(final auth_block_t auth_block) {
 
             tv_status_.setText(status_msg_);
 
@@ -163,9 +164,9 @@ public class LoginActivity extends AppCompatActivity {
                 edit.putString("password", "");
             }
 
-            if(success_p){
+            if(auth_block != null){
                 Intent intent = new Intent(context_, MainActivity.class);
-                intent.putExtra(String.format("%s.user_id", context_.getPackageName()), user_id_);
+                intent.putExtra(String.format("%s.auth_block", context_.getPackageName()), auth_block);
                 intent.putExtra(String.format("%s.password", context_.getPackageName()), password_);
                 startActivity(intent);
             }
@@ -173,12 +174,12 @@ public class LoginActivity extends AppCompatActivity {
             edit.commit();
 
             if(e_ != null){
+                Log.e("LoginActivity", e_.toString());
                 Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
 
         }
-
     }
 }
 

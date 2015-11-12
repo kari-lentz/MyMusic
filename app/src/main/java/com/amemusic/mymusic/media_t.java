@@ -16,6 +16,7 @@ public class media_t extends Object{
     private String artist_;
     private String edit_;
     private String warning_;
+    private Date process_dts_;
 
     private Hashtable<String, Object> data_;
 
@@ -108,6 +109,10 @@ public class media_t extends Object{
     public void set_warning(String value){
         warning_ = value;
     }
+
+    public Date get_process_date(){return process_dts_;}
+
+    public void set_process_date(Date process_dts){process_dts_ = process_dts;}
 
     public String get_file_name(){
         String edit_str = edit_.length() > 0 ? String.format(" (%s)", unc_fix(edit_)): "";
