@@ -22,7 +22,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tv_status_;
     ListView lv_;
     ProgressBar progress_bar_;
+    String media_type_ = "MP3";
 
     private void run_view(View header, grid_cols_t grid_cols) {
 
@@ -60,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         try {
-            new grid_task(this, auth_block_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=MP3&disc_type=ALL&user_id=%s&json=t", auth_block_.get_user_id())));
+            new grid_task(this, auth_block_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
         } catch (MalformedURLException e) {
             tv_status_.setText("Incomplete URL");
         }
@@ -343,6 +346,48 @@ public class MainActivity extends AppCompatActivity {
             music_getter_ = new music_getter(codec, user_id, password).progress(this);
         }
 
+        void record_download(media_t media) throws IOException, JSONException{
+            final int BUFFER_SIZE=2048;
+            char buffer []= new char[BUFFER_SIZE];
+
+            URL url = new URL(String.format("http://tophitsdirect.com/1.0.12.0/music-downloaded.py?media_type=%s&music_id=%d&downloaded_discs=%s&user_id=%s&json=1",
+                    media.get_media_type(), media.get_music_id(), media.get_disc(), auth_block_.get_user_id()));
+
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+            try {
+                StringWriter writer = new StringWriter();
+                InputStream in = urlConnection.getInputStream();
+                InputStreamReader isr = new InputStreamReader(in, "latin1");
+                for(int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)){
+                    writer.write(buffer, 0, ret);
+                }
+                JSONObject reply = new JSONArray(writer.toString()).getJSONObject(0);
+                final my_json_helper helper = new my_json_helper(reply);
+                final media_t my_media = media;
+
+                Log.i(tag_, String.format("downloaded %s", media.get_file_name()));
+                publishProgress(new task_progress_i() {
+                    @Override
+                    public void call() {
+                        my_media.flag_downloaded(helper.try_int("CREDITS_USED"), helper.try_date("DTS_DOWNLOADED", "yyyy-MM-dd hh:mm:ss"));
+
+                        tv_status_.setText(String.format("Downloaded %s", my_media.get_file_name()));
+                        progress_bar_.setProgress(100);
+
+                        media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
+                        if (adapter != null) {
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+
+            }
+            finally {
+                urlConnection.disconnect();
+            }
+        }
+
         @Override
         protected void onProgressUpdate(task_progress_i ... progress){
 
@@ -374,6 +419,7 @@ public class MainActivity extends AppCompatActivity {
             media_t media;
 
             try{
+                e_ =null;
                 while((media = queue_.poll()) != null){
                     final String file_name = media.get_file_name();
                     final media_t my_media = media;
@@ -387,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                             my_media.flag_downloading();
 
                             media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
-                            if(adapter != null){
+                            if (adapter != null) {
                                 adapter.notifyDataSetChanged();
                             }
                         }
@@ -395,21 +441,7 @@ public class MainActivity extends AppCompatActivity {
 
                     current_media_ = media;
                     music_getter_.call(media);
-
-                    Log.i(tag_, String.format("downloaded %s", media.get_file_name()));
-                    publishProgress(new task_progress_i() {
-                        @Override
-                        public void call() {
-                            tv_status_.setText(String.format("Downloaded %s", file_name));
-                            progress_bar_.setProgress(100);
-                            my_media.flag_downloaded();
-
-                            media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
-                            if(adapter != null) {
-                                adapter.notifyDataSetChanged();
-                            }
-                        }
-                    });
+                    record_download(media);
 
                     ctr_++;
                 }

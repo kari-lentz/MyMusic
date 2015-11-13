@@ -25,6 +25,7 @@ public class my_song_reader {
         my_json_helper helper = new my_json_helper(row);
 
         ret.set_music_id(helper.try_int("MUSIC_ID"));
+        ret.set_media_type(helper.try_string("MEDIA_TYPE"));
         ret.set_disc(helper.try_string("DISC"));
         ret.set_title(helper.try_string("TITLE"));
         ret.set_artist(helper.try_string("ARTIST"));

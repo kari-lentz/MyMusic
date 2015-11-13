@@ -21,14 +21,16 @@ public class media_t extends Object{
     private String warning_;
     private Date process_dts_;
     private int credits_used_;
+    private Date downloaded_dts_ = null;
     private int total_credits_;
+    private String media_type_;
     private Boolean downloading_p_ = false;
 
     private Hashtable<String, Object> data_;
 
     private Hashtable<String, String> exts_;
 
-    static private String codec_ = "alac";
+    static private String codec_ = "mp3";
 
     private String unc_fix(String value){
 
@@ -53,13 +55,12 @@ public class media_t extends Object{
         exts_.put("video", "mp4");
     }
 
-    public int get_music_id(){
-        return music_id_;
-    }
+    public int get_music_id(){return music_id_;}
 
-    public void set_music_id(int value){
-        music_id_ = value;
-    }
+    public void set_music_id(int value){music_id_ = value;}
+
+    public String get_media_type(){return media_type_;}
+    public void set_media_type(String value){media_type_ = value;}
 
     public String get_disc(){
         return disc_;
@@ -147,9 +148,10 @@ public class media_t extends Object{
          downloading_p_  = true;
     }
 
-    public void flag_downloaded(){
+    public void flag_downloaded(int credits_used, Date downloaded_dts){
         downloading_p_ = false;
-        ++credits_used_;
+        credits_used_ = credits_used;
+        downloaded_dts_ = downloaded_dts;
     }
 
     public String get_file_name(){
