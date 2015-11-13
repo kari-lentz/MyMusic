@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 media_adapter_t adapter = ((media_adapter_t) lv_.getAdapter());
-                if(adapter != null){
+                if (adapter != null) {
                     adapter.update_selected_pos(view, position);
                 }
             }
@@ -69,15 +69,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void start_download_task(media_t media){
+    private void start_download_task(){
 
-        media_queue_.add(media);
+        media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
 
-        if(download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING){
-            //start brand new download task if previous one finished
-            download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), auth_block_.get_user_id(), password_);
-            download_task_ .execute();
+        String msg;
+
+        if(adapter != null) {
+            media_t media = null;
+            int position = adapter.get_selected_position();
+            media = (position != -1) ? (media_t) lv_.getItemAtPosition(position) : null;
+
+            if(media != null) {
+                msg = String.format("queing %s for download", media.get_file_name());
+                media_queue_.add(media);
+
+                if (download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING) {
+                    //start brand new download task if previous one finished
+                    download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), auth_block_.get_user_id(), password_);
+                    download_task_.execute();
+                }
+            }
+            else{
+                msg = "nothing selected";
+            }
         }
+        else {
+            msg = "No media available";
+        }
+
+        make_toast(msg);
+    }
+
+    private void make_toast(String msg) {
+        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -94,8 +119,6 @@ public class MainActivity extends AppCompatActivity {
         tv_status_ = (TextView) findViewById(R.id.txt_status);
         progress_bar_ = (ProgressBar) findViewById(R.id.progress_download);
         lv_= (ListView) findViewById(R.id.lv_media);
-
-        final ListView lv = (ListView) findViewById(R.id.lv_media);
 
         final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
                 new grid_col_download_t(this, auth_block_, 150),
@@ -138,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                     switch (event.getActionMasked()) {
                         case MotionEvent.ACTION_DOWN:
                             float xpos = my_core.px_to_dp(v, event.getRawX());
-                            resize_context_ = new resize_context_t(lv, v, col, xpos) ;
+                            resize_context_ = new resize_context_t(lv_, v, col, xpos) ;
                             break;
                     }
 
@@ -152,13 +175,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if(resize_context_ != null) {
+                if (resize_context_ != null) {
                     float xpos = my_core.px_to_dp(v, event.getRawX());
 
                     switch (event.getActionMasked()) {
 
                         case MotionEvent.ACTION_MOVE:
-                             resize_context_.call(xpos);
+                            resize_context_.call(xpos);
                             break;
                         case MotionEvent.ACTION_UP:
                             resize_context_.call(xpos);
@@ -178,32 +201,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                media_adapter_t adapter = (media_adapter_t) lv.getAdapter();
-
-                String msg;
-                media_t media = null;
-
-                if(adapter != null) {
-                    int position = adapter.get_selected_position();
-                    media = (position != -1) ? (media_t) lv.getItemAtPosition(position) : null;
-                    msg = media != null ? String.format("downloading %s to %s", media.get_file_name(), media.get_disc()) : "nothing selected";
-                }
-                else {
-                    media = null;
-                    msg = "No media available";
-                }
-
-                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-
-                if(media != null){
-                    start_download_task(media);
-                }
-            }});
 
         Button btn = (Button) findViewById(R.id.btn_fetch_media);
         btn.setOnClickListener(
@@ -226,17 +223,32 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        boolean ret;
+
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(item.getItemId()){
+            case R.id.action_settings:
+                make_toast("Settings not Implemented");
+                ret = true;
+                break;
+            case R.id.action_download:
+                start_download_task();
+                ret = true;
+                break;
+            case R.id.action_cancel:
+                make_toast("cancel not Implemented");
+                ret = true;
+                break;
+            default:
+                ret= super.onOptionsItemSelected(item);
         }
 
-        return super.onOptionsItemSelected(item);
+        return ret;
     }
 
     /**
