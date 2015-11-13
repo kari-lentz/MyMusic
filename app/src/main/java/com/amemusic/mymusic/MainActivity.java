@@ -263,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
 
         private ArrayList<media_t> fetch_media(URL url) throws MalformedURLException, IOException, JSONException {
 
-            final int BUFFER_SIZE=2048;
+            final int BUFFER_SIZE=my_core.BUFFER_SIZE;
             char buffer []= new char[BUFFER_SIZE];
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         void record_download(media_t media) throws IOException, JSONException{
-            final int BUFFER_SIZE=2048;
+            final int BUFFER_SIZE=my_core.BUFFER_SIZE;
             char buffer []= new char[BUFFER_SIZE];
 
             URL url = new URL(String.format("http://tophitsdirect.com/1.0.12.0/music-downloaded.py?media_type=%s&music_id=%d&downloaded_discs=%s&user_id=%s&json=1",

@@ -89,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected auth_block_t doInBackground(Void... params) {
 
-            final int BUFFER_SIZE=2048;
+            final int BUFFER_SIZE=my_core.BUFFER_SIZE;
             char buffer []= new char[BUFFER_SIZE];
             e_ = null;
             auth_block_t ret = null;
