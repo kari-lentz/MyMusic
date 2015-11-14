@@ -493,16 +493,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void do_progress_record(final int progress, final int total) {
-            //Log.i("DOWNLOAD TASK", String.format("PROGRESS:%d of %d", progress, total));
-            if (current_media_ != null) {
 
+             if (current_media_ != null) {
+
+                final media_t media = current_media_;
                 publishProgress(new task_progress_i() {
                     @Override
                     public void call() {
 
                         int percent = (progress >= 1024 && total >= 1024) ? (progress / 1024) * 100 / (total / 1024) : 0;
-
-                        progress_bar_.setProgress(percent);
+                        update_progress(media, percent);
                     }
                 });
 
@@ -536,7 +536,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } catch (file_getter.exec_cancelled e) {
                 Log.i(tag_, "caught cancel");
-               e_ = e;
+                e_ = e;
             } catch (Exception e) {
                 e_ = e;
             }
