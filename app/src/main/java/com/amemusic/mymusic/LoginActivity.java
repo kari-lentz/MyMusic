@@ -72,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, auth_block_t> {
+    public class UserLoginTask extends AsyncTask<Void, String, auth_block_t> {
 
         private final Context context_;
         private final String user_id_;
@@ -87,12 +87,21 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onProgressUpdate(String ... msg){
+            if(msg.length > 0) {
+                tv_status_.setText(msg[0]);
+            }
+        }
+
+        @Override
         protected auth_block_t doInBackground(Void... params) {
 
             final int BUFFER_SIZE=my_core.BUFFER_SIZE;
             char buffer []= new char[BUFFER_SIZE];
             e_ = null;
             auth_block_t ret = null;
+
+            publishProgress("Signing in ...");
 
             try {
                 // TODO: attempt authentication against a network service.
@@ -107,6 +116,7 @@ public class LoginActivity extends AppCompatActivity {
                     for(int ret_bytes = isr.read(buffer, 0, BUFFER_SIZE); ret_bytes != -1; ret_bytes = isr.read(buffer, 0, BUFFER_SIZE)){
                         writer.write(buffer, 0, ret_bytes);
                     }
+
                     JSONObject json_auth_block = new JSONObject(writer.toString());
                     my_json_helper helper = new my_json_helper(json_auth_block);
 

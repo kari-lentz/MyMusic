@@ -3,7 +3,6 @@ package com.amemusic.mymusic;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -69,21 +68,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void start_download_task(){
+    private media_t fetch_selected(){
+        media_t ret;
 
         media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
 
-        String msg;
-
         if(adapter != null) {
-            media_t media = null;
             int position = adapter.get_selected_position();
-            media = (position != -1) ? (media_t) lv_.getItemAtPosition(position) : null;
+            ret = (position != -1) ? (media_t) lv_.getItemAtPosition(position) : null;
+        }
+        else {
+            ret = null;
+        }
 
-            if(media != null) {
-                msg = String.format("queing %s for download", media.get_file_name());
+        return ret;
+    }
+
+    private void update_progress(media_t media, int progress){
+        media_adapter_t adapter =  (media_adapter_t) lv_.getAdapter();
+
+        if(adapter != null){
+            adapter.notifyDataSetChanged();
+        }
+
+        if(progress >= 0) {
+            progress_bar_.setProgress(progress);
+        }
+
+        String msg;
+        media_t.states_t state = media.get_download();
+        if(state == media_t.states_t.DOWNLOADED || state == media_t.states_t.MAX_DOWNLOADS){
+            msg = String.format("Downloaded %s", media.get_file_name());
+        }
+        else if(state == media_t.states_t.DOWNLOADING){
+            msg = String.format("Downloading %s", media.get_file_name());
+        }
+        else if(state == media_t.states_t.QUEUED){
+            msg = String.format("Queued %s", media.get_file_name());
+        }
+        else{
+            msg = "";
+        }
+
+        tv_status_.setText(msg);
+    }
+
+    private void start_download_task(){
+
+        media_t media = fetch_selected();
+
+        if(media != null) {
+
+            media_t.can_t can = media.can_download();
+
+            if(can.can()) {
+
+                make_toast(String.format("queing %s for download", media.get_file_name()));
                 media.flag_queued();
                 media_queue_.add(media);
+                update_progress(media, -1);
 
                 if (download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING) {
                     //start brand new download task if previous one finished
@@ -91,48 +134,34 @@ public class MainActivity extends AppCompatActivity {
                     download_task_.execute();
                 }
             }
-            else{
-                msg = "nothing selected";
+            else
+            {
+                make_toast(can.reason());
             }
         }
-        else {
-            msg = "No media available";
+        else{
+            make_toast("no media selected");
         }
-
-        make_toast(msg);
     }
 
     private void cancel_download_task(){
 
-        media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
+        media_t media = fetch_selected();
 
-        String msg;
+        if (media != null) {
 
-        if(adapter != null) {
-            media_t media = null;
-            int position = adapter.get_selected_position();
-            media = (position != -1) ? (media_t) lv_.getItemAtPosition(position) : null;
+            media_t.can_t can = media.can_cancel();
 
-            if (media != null) {
-                msg = String.format("queing %s for download", media.get_file_name());
-                if (media_queue_.contains(media)) {
-                    media_queue_.remove(media);
+            if(can.can()){
+
+                if (media_queue_.remove(media)) {
                     media.flag_cancelled();
-                    adapter.notifyDataSetChanged();
+                    update_progress(media, -1);
                     make_toast(String.format("%s no longer on download queue", media.get_file_name()));
                 }
-                else if (media.get_download() == media_t.states_t.DOWNLOADING) {
-                    if (download_task_ != null) {
-                        download_task_.cancel(true);
-                        media.flag_cancelled();
-                        progress_bar_.setProgress(0);
-                        adapter.notifyDataSetChanged();
-                        make_toast(String.format("Download of %s cancelled in progress", media.get_file_name()));
-                    }
-                    else{
-                        make_toast(String.format("%s not currently downloading", media.get_file_name()));
-                    }
-                }
+                else if (download_task_ != null && download_task_.getStatus() == AsyncTask.Status.RUNNING) {
+                    download_task_.cancel(true);
+                 }
                 else{
                     make_toast(String.format("%s not currently selected for download", media.get_file_name()));
                 }
@@ -428,14 +457,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void call() {
                         my_media.flag_downloaded(helper.try_int("CREDITS_USED"), helper.try_date("DTS_DOWNLOADED", "yyyy-MM-dd hh:mm:ss"));
+                        update_progress(my_media, 100);
 
-                        tv_status_.setText(String.format("Downloaded %s", my_media.get_file_name()));
-                        progress_bar_.setProgress(100);
-
-                        media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
-                        if (adapter != null) {
-                            adapter.notifyDataSetChanged();
-                        }
                     }
                 });
 
@@ -464,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
 
                         int percent = (progress >= 1024 && total >= 1024) ? (progress / 1024) * 100 / (total / 1024) : 0;
 
-                         progress_bar_.setProgress(percent);
+                        progress_bar_.setProgress(percent);
                     }
                 });
 
@@ -485,14 +508,8 @@ public class MainActivity extends AppCompatActivity {
                     publishProgress(new task_progress_i() {
                         @Override
                         public void call() {
-                            tv_status_.setText(String.format("Downloading %s", file_name));
-                            progress_bar_.setProgress(0);
                             my_media.flag_downloading();
-
-                            media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
-                            if (adapter != null) {
-                                adapter.notifyDataSetChanged();
-                            }
+                            update_progress(my_media, 0);
                         }
                     });
 
@@ -521,6 +538,28 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
+        }
+
+        void handle_cancel(){
+            if(current_media_ != null && current_media_.get_download() == media_t.states_t.DOWNLOADING) {
+                current_media_.flag_cancelled();
+                update_progress(current_media_, 0);
+                make_toast(String.format("Download of %s cancelled in progress", current_media_.get_file_name()));
+            }
+
+            if(!media_queue_.isEmpty()) {
+                start_download_task();
+            }
+        }
+
+        @Override
+        protected void onCancelled (){
+            handle_cancel();
+        }
+
+        @Override
+        protected void onCancelled (Integer num_files){
+            handle_cancel();
         }
     }
 }

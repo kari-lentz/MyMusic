@@ -144,6 +144,63 @@ public class media_t extends Object{
         return ret;
     }
 
+    class bad_operation_t extends Exception{
+        bad_operation_t(String reason){
+            super(reason);
+        }
+    }
+
+    class can_t {
+
+        private boolean can_p_;
+        private String reason_;
+
+        can_t(){
+            can_p_ = true;
+        }
+
+        can_t(String reason){
+            can_p_ = false;
+            reason_ = reason;
+        }
+
+        boolean can(){
+            return can_p_;
+        }
+
+        String reason(){
+            return reason_;
+        }
+    }
+
+    public can_t can_download(){
+        can_t ret;
+
+        switch(get_download()){
+            case QUEUED:
+                ret = new can_t("Media already queued");
+                break;
+            case DOWNLOADING:
+                ret = new can_t("Media already downloading");
+                break;
+            case MAX_DOWNLOADS:
+                ret = new can_t("Media already downloaded maximum allowable of 2 times");
+                break;
+            case PAYMENT_MISSING:
+                ret = new can_t(String.format("%s. Payment needed to download", process_dts_));
+                break;
+            default:
+                ret = new can_t();
+                break;
+        }
+
+        return ret;
+    }
+
+    public can_t can_cancel() {
+        return (queue_state_ != states_t.PENDING) ? new can_t() : new can_t("Media never selected for download");
+    }
+
     public void flag_queued(){
         queue_state_  = states_t.QUEUED;
     }
