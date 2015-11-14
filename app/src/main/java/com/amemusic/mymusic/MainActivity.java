@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
             if(media != null) {
                 msg = String.format("queing %s for download", media.get_file_name());
+                media.flag_queued();
                 media_queue_.add(media);
 
                 if (download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING) {
@@ -99,6 +100,50 @@ public class MainActivity extends AppCompatActivity {
         }
 
         make_toast(msg);
+    }
+
+    private void cancel_download_task(){
+
+        media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
+
+        String msg;
+
+        if(adapter != null) {
+            media_t media = null;
+            int position = adapter.get_selected_position();
+            media = (position != -1) ? (media_t) lv_.getItemAtPosition(position) : null;
+
+            if (media != null) {
+                msg = String.format("queing %s for download", media.get_file_name());
+                if (media_queue_.contains(media)) {
+                    media_queue_.remove(media);
+                    media.flag_cancelled();
+                    adapter.notifyDataSetChanged();
+                    make_toast(String.format("%s no longer on download queue", media.get_file_name()));
+                }
+                else if (media.get_download() == media_t.states_t.DOWNLOADING) {
+                    if (download_task_ != null) {
+                        download_task_.cancel(true);
+                        media.flag_cancelled();
+                        progress_bar_.setProgress(0);
+                        adapter.notifyDataSetChanged();
+                        make_toast(String.format("Download of %s cancelled in progress", media.get_file_name()));
+                    }
+                    else{
+                        make_toast(String.format("%s not currently downloading", media.get_file_name()));
+                    }
+                }
+                else{
+                    make_toast(String.format("%s not currently selected for download", media.get_file_name()));
+                }
+            }
+            else {
+                make_toast("nothing selected for cancel");
+            }
+        }
+        else {
+            make_toast("no tracks available");
+        }
     }
 
     private void make_toast(String msg) {
@@ -241,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
                 ret = true;
                 break;
             case R.id.action_cancel:
-                make_toast("cancel not Implemented");
+                cancel_download_task();
                 ret = true;
                 break;
             default:

@@ -8,7 +8,7 @@ import java.util.Hashtable;
  */
 public class media_t extends Object{
 
-    enum states_t {PENDING, DOWNLOADING, DOWNLOADED, MAX_DOWNLOADS, NOT_ACTIVATED, PAYMENT_MISSING}
+    enum states_t {PENDING, QUEUED, DOWNLOADING, DOWNLOADED, MAX_DOWNLOADS, NOT_ACTIVATED, PAYMENT_MISSING}
 
     private auth_block_t auth_block_;
 
@@ -24,7 +24,7 @@ public class media_t extends Object{
     private Date downloaded_dts_ = null;
     private int total_credits_;
     private String media_type_;
-    private Boolean downloading_p_ = false;
+    private states_t queue_state_ = states_t.PENDING;
 
     private Hashtable<String, Object> data_;
 
@@ -125,8 +125,8 @@ public class media_t extends Object{
         if(auth_block_.is_payment_missing(this)){
             ret = states_t.PAYMENT_MISSING;
         }
-        else if(downloading_p_){
-            ret = states_t.DOWNLOADING;
+        else if(queue_state_ != states_t.PENDING){
+            ret = queue_state_;
         }
         else if(credits_used_ >= total_credits_)
         {
@@ -144,14 +144,22 @@ public class media_t extends Object{
         return ret;
     }
 
+    public void flag_queued(){
+        queue_state_  = states_t.QUEUED;
+    }
+
     public void flag_downloading(){
-         downloading_p_  = true;
+         queue_state_  = states_t.DOWNLOADING;
     }
 
     public void flag_downloaded(int credits_used, Date downloaded_dts){
-        downloading_p_ = false;
+        queue_state_ = states_t.PENDING;
         credits_used_ = credits_used;
         downloaded_dts_ = downloaded_dts;
+    }
+
+    public void flag_cancelled(){
+        queue_state_ = states_t.PENDING;
     }
 
     public String get_file_name(){

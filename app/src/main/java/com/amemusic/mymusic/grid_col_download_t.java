@@ -20,6 +20,7 @@ public class grid_col_download_t extends grid_col_t {
         super(context, "DOWNLOAD", "Download", width, grid_col_t.types_t.STRING);
         auth_block_ = auth_block;
         states_.put(media_t.states_t.PENDING, "");
+        states_.put(media_t.states_t.QUEUED, "Queued");
         states_.put(media_t.states_t.DOWNLOADING, "Downloading");
         states_.put(media_t.states_t.DOWNLOADED, "Downloaded");
         states_.put(media_t.states_t.MAX_DOWNLOADS, "Max Allowed");
