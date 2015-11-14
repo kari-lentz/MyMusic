@@ -410,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
         void call();
     }
 
-    public class download_task extends AsyncTask<Void, task_progress_i, Integer> implements progress_i{
+    public class download_task extends AsyncTask<Void, task_progress_i, Integer> implements file_getter.progress_i, file_getter.canceller_i {
 
         Context context_;
         TextView tv_status_;
@@ -420,21 +420,37 @@ public class MainActivity extends AppCompatActivity {
         Exception e_ = null;
         int ctr_ = 0;
         String tag_ = "download_task";
-
         media_t current_media_ = null;
 
-        download_task(Context context, TextView tv_status, ConcurrentLinkedQueue<media_t> queue, String codec, String user_id, String password){
+        download_task(Context context, TextView tv_status, ConcurrentLinkedQueue<media_t> queue, String codec, String user_id, String password) {
             super();
 
             context_ = context;
             tv_status_ = tv_status;
             queue_ = queue;
-            music_getter_ = new music_getter(codec, user_id, password).progress(this);
+            music_getter_ = new music_getter(codec, user_id, password).progress(this).canceller(this);
         }
 
-        void record_download(media_t media) throws IOException, JSONException{
-            final int BUFFER_SIZE=my_core.BUFFER_SIZE;
-            char buffer []= new char[BUFFER_SIZE];
+        @Override
+        public boolean is_cancelled() {
+            return this.isCancelled();
+        }
+
+        void handle_cancel() {
+            if (current_media_ != null && current_media_.get_download() == media_t.states_t.DOWNLOADING) {
+                current_media_.flag_cancelled();
+                update_progress(current_media_, 0);
+                make_toast(String.format("Download of %s cancelled in progress", current_media_.get_file_name()));
+            }
+
+            if (!media_queue_.isEmpty()) {
+                start_download_task();
+            }
+        }
+
+        void record_download(media_t media) throws IOException, JSONException {
+            final int BUFFER_SIZE = my_core.BUFFER_SIZE;
+            char buffer[] = new char[BUFFER_SIZE];
 
             URL url = new URL(String.format("http://tophitsdirect.com/1.0.12.0/music-downloaded.py?media_type=%s&music_id=%d&downloaded_discs=%s&user_id=%s&json=1",
                     media.get_media_type(), media.get_music_id(), media.get_disc(), auth_block_.get_user_id()));
@@ -445,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
                 StringWriter writer = new StringWriter();
                 InputStream in = urlConnection.getInputStream();
                 InputStreamReader isr = new InputStreamReader(in, "latin1");
-                for(int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)){
+                for (int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)) {
                     writer.write(buffer, 0, ret);
                 }
                 JSONObject reply = new JSONArray(writer.toString()).getJSONObject(0);
@@ -462,24 +478,23 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-            }
-            finally {
+            } finally {
                 urlConnection.disconnect();
             }
         }
 
         @Override
-        protected void onProgressUpdate(task_progress_i ... progress){
+        protected void onProgressUpdate(task_progress_i... progress) {
 
-            if(progress.length > 0) {
+            if (progress.length > 0) {
                 progress[0].call();
             }
         }
 
         @Override
-        public void doProgressRecord(final int progress, final int total){
+        public void do_progress_record(final int progress, final int total) {
             //Log.i("DOWNLOAD TASK", String.format("PROGRESS:%d of %d", progress, total));
-            if(current_media_ != null){
+            if (current_media_ != null) {
 
                 publishProgress(new task_progress_i() {
                     @Override
@@ -495,12 +510,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Integer doInBackground(Void ... params){
+        protected Integer doInBackground(Void... params) {
             media_t media;
 
-            try{
-                e_ =null;
-                while((media = queue_.poll()) != null){
+            try {
+                e_ = null;
+                while ((media = queue_.poll()) != null) {
                     final String file_name = media.get_file_name();
                     final media_t my_media = media;
 
@@ -519,8 +534,10 @@ public class MainActivity extends AppCompatActivity {
 
                     ctr_++;
                 }
-            }
-            catch(Exception e){
+            } catch (file_getter.exec_cancelled e) {
+                Log.i(tag_, "caught cancel");
+               e_ = e;
+            } catch (Exception e) {
                 e_ = e;
             }
 
@@ -528,38 +545,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(Integer num_files){
-            if(e_ == null){
+        protected void onCancelled(Integer result) {
+            Log.i(tag_, "handling cancel post-api 11 style");
+            handle_cancel();
+        }
+
+        @Override
+        protected void onCancelled() {
+            Log.i(tag_, "handling cancel post-api 3 style");
+            handle_cancel();
+        }
+
+        @Override
+        protected void onPostExecute(Integer num_files) {
+            if (e_ == null) {
                 tv_status_.setText(String.format("Finished downloading %d files", num_files));
             }
-            else{
+            else if(e_ instanceof file_getter.exec_cancelled){
+                Log.i(tag_, "handling the cancel pre-api 3 style");
+                handle_cancel();
+            }
+            else {
+
                 Log.e(tag_, e_.toString());
                 tv_status_.setText("Server Error");
                 Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
-        }
-
-        void handle_cancel(){
-            if(current_media_ != null && current_media_.get_download() == media_t.states_t.DOWNLOADING) {
-                current_media_.flag_cancelled();
-                update_progress(current_media_, 0);
-                make_toast(String.format("Download of %s cancelled in progress", current_media_.get_file_name()));
-            }
-
-            if(!media_queue_.isEmpty()) {
-                start_download_task();
-            }
-        }
-
-        @Override
-        protected void onCancelled (){
-            handle_cancel();
-        }
-
-        @Override
-        protected void onCancelled (Integer num_files){
-            handle_cancel();
         }
     }
 }

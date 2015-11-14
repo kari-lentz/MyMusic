@@ -17,9 +17,21 @@ import java.net.URL;
 
 public class file_getter {
 
+    class exec_cancelled extends Exception{
+    }
+
+    interface progress_i {
+        void do_progress_record(int progress, int total);
+    }
+
+    interface canceller_i {
+        boolean is_cancelled();
+    }
+
     private String user_id_;
     private String password_;
     progress_i progress_ = null;
+    canceller_i canceller_ = null;
     private int total_ = 0;
 
     private StringWriter temp_writer_;
@@ -40,6 +52,11 @@ public class file_getter {
 
     file_getter progress(progress_i progress){
         progress_ = progress;
+        return this;
+    }
+
+    file_getter canceller(canceller_i canceller){
+        canceller_ = canceller;
         return this;
     }
 
@@ -103,7 +120,7 @@ public class file_getter {
         }
 
         if(progress_ != null){
-            progress_.doProgressRecord(total_ - total_remaining + size, total_);
+            progress_.do_progress_record(total_ - total_remaining + size, total_);
         }
     }
 
@@ -112,7 +129,8 @@ public class file_getter {
         out_stream.seek(offset);
     }
 
-    public void call(URL url, File local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException{
+    public void call(URL url, File local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled{
+
         Authenticator.setDefault (new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(user_id_, password_.toCharArray());
@@ -121,23 +139,23 @@ public class file_getter {
 
         RandomAccessFile out_stream = new RandomAccessFile(local_file, "rw");
 
-        try{
+        try {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            try{
+            try {
                 connection.setRequestMethod("GET");
                 connection.connect();
 
                 int code = connection.getResponseCode();
 
-                if(!(code == 200 || (code >= 300 && code <= 304))){
+                if (!(code == 200 || (code >= 300 && code <= 304))) {
                     throw new http_exception_t(code, connection.getResponseMessage());
                 }
 
                 InputStream in_stream = connection.getInputStream();
                 Boolean epilogue_p = false;
 
-                while(!epilogue_p){
-                    switch(verify_field(in_stream, "request")){
+                while (!epilogue_p) {
+                    switch (verify_field(in_stream, "request")) {
                         case "write":
                             run_write(in_stream, out_stream,
                                     Integer.parseInt(verify_field(in_stream, "size")),
@@ -150,21 +168,26 @@ public class file_getter {
                             epilogue_p = true;
                             break;
                     }
+
+                    if (canceller_ != null && canceller_.is_cancelled()) {
+                        throw new exec_cancelled();
+                    }
                 }
-            }
-            finally{
+            } finally {
                 connection.disconnect();
             }
         }finally{
             out_stream.close();
         }
+
     }
 
-    public void call(URL url, File local_dir, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException {
+    public void call(URL url, File local_dir, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled {
         call(url, new File(local_dir, local_file));
     }
 
-    public void call(URL url, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException {
+    public void call(URL url, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled {
         call(url, new File(local_file));
     }
+
 }
