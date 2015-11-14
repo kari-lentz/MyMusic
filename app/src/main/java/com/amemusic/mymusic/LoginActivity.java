@@ -107,11 +107,21 @@ public class LoginActivity extends AppCompatActivity {
                 // TODO: attempt authentication against a network service.
                 URL url = new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-auth.py?user-id=%s&password=%s", user_id_, password_));
 
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
                 try {
+
+                    connection.setRequestMethod("GET");
+                    connection.connect();
+
+                    int code = connection.getResponseCode();
+
+                    if(!(code == 200 || (code >= 300 && code <= 304))){
+                        throw new http_exception_t(code, connection.getResponseMessage());
+                    }
+
                     StringWriter writer = new StringWriter();
-                    InputStream in = urlConnection.getInputStream();
+                    InputStream in = connection.getInputStream();
                     InputStreamReader isr = new InputStreamReader(in, "latin1");
                     for(int ret_bytes = isr.read(buffer, 0, BUFFER_SIZE); ret_bytes != -1; ret_bytes = isr.read(buffer, 0, BUFFER_SIZE)){
                         writer.write(buffer, 0, ret_bytes);
@@ -143,10 +153,11 @@ public class LoginActivity extends AppCompatActivity {
 
                 }
                 finally {
-                    urlConnection.disconnect();
+                    connection.disconnect();
                 }
             }
             catch(Exception e){
+                status_msg_ = "Connection problem";
                 e_ = e;
             }
 
