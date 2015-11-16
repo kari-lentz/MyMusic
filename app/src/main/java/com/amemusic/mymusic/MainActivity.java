@@ -113,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
         tv_status_.setText(msg);
     }
 
-    private void continue_download_tasks(){
-        if (download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING) {
+    private void continue_download_tasks(boolean force_new_p){
+        if (force_new_p || download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING) {
             //start brand new download task if previous one finished
             download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), auth_block_.get_user_id(), password_);
             download_task_.execute();
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 media_queue_.add(media);
                 update_progress(media, -1);
 
-                continue_download_tasks();
+                continue_download_tasks(false);
             }
             else
             {
@@ -448,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (!media_queue_.isEmpty()) {
-               continue_download_tasks();
+               continue_download_tasks(true);
             }
         }
 
@@ -509,7 +509,6 @@ public class MainActivity extends AppCompatActivity {
                         update_progress(media, percent);
                     }
                 });
-
             }
         }
 

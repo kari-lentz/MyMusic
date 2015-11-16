@@ -33,6 +33,7 @@ public class file_getter {
     progress_i progress_ = null;
     canceller_i canceller_ = null;
     private int total_ = 0;
+    final byte[] write_buffer_ = new byte[my_core.BUFFER_SIZE];
 
     private StringWriter temp_writer_;
 
@@ -98,9 +99,6 @@ public class file_getter {
 
     private void run_write(InputStream in_stream, RandomAccessFile out_stream, int size, int total_remaining) throws IOException, parse_exception_t
     {
-        final int BUFFER_SIZE = 65536;
-        byte[] buffer = new byte[BUFFER_SIZE];
-
         if(total_ == 0) {
             total_ = total_remaining;
         }
@@ -109,13 +107,13 @@ public class file_getter {
 
         int remaining = size;
         while(remaining > 0){
-            int ret_bytes = in_stream.read(buffer, 0, remaining > BUFFER_SIZE ? BUFFER_SIZE : remaining);
+            int ret_bytes = in_stream.read(write_buffer_, 0, remaining > my_core.BUFFER_SIZE ? my_core.BUFFER_SIZE : remaining);
 
             if(ret_bytes == -1){
                 break;
             }
 
-            out_stream.write(buffer, 0, ret_bytes);
+            out_stream.write(write_buffer_, 0, ret_bytes);
             remaining -= ret_bytes;
         }
 
