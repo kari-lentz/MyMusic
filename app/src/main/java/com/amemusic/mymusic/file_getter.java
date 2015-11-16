@@ -3,6 +3,7 @@ package com.amemusic.mymusic;
 /**
  * Created by klentz on 11/7/15.
  */
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,7 @@ public class file_getter {
     private int total_ = 0;
     final byte[] write_buffer_ = new byte[my_core.BUFFER_SIZE];
 
-    private StringWriter temp_writer_;
+    private StringBuilder temp_writer_ = new StringBuilder();;
 
     enum SPECIAL_CHARS{EOL(10);
         private int value;
@@ -48,7 +49,7 @@ public class file_getter {
         user_id_ = user_id;
         password_ = password;
 
-        temp_writer_ = new StringWriter();
+        temp_writer_.ensureCapacity(1024);
     }
 
     file_getter progress(progress_i progress){
@@ -67,11 +68,11 @@ public class file_getter {
 
         for(int c = in_stream.read(); c != -1; c = in_stream.read()){
             if(c != SPECIAL_CHARS.EOL.value){
-                temp_writer_.write(c);
+                temp_writer_.append((char) c);
             }
             else {
                 line = temp_writer_.toString();
-                temp_writer_.getBuffer().setLength(0);
+                temp_writer_.setLength(0);
                 break;
             }
         }
@@ -80,7 +81,7 @@ public class file_getter {
             throw new parse_exception_t("premature end of line:");
         }
 
-        String parts[] = line.split(":");
+        final String parts[] = line.split(":");
 
         if(parts.length == 1){
             return null;
@@ -149,7 +150,7 @@ public class file_getter {
                     throw new http_exception_t(code, connection.getResponseMessage());
                 }
 
-                InputStream in_stream = connection.getInputStream();
+                BufferedInputStream in_stream = new BufferedInputStream(connection.getInputStream());
                 Boolean epilogue_p = false;
 
                 while (!epilogue_p) {
