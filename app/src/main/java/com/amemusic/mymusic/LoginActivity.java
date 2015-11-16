@@ -3,6 +3,7 @@ package com.amemusic.mymusic;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.AsyncTask;
@@ -35,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     SharedPreferences prefs_;
 
     final static private String PREFS_FILE_= "THD-Preferences";
+    final static String tag_ = "LoginActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +118,12 @@ public class LoginActivity extends AppCompatActivity {
 
                     int code = connection.getResponseCode();
 
-                    if(!(code == 200 || (code >= 300 && code <= 304))){
+                    Log.i(tag_, String.format("after connection: %d", code));
+
+                    if(code == 301 || code == 302){
+                        throw new http_redirect_t(code, connection.getHeaderField("Location"), connection.getResponseMessage());
+                    }
+                    else if(!(code == 200)){
                         throw new http_exception_t(code, connection.getResponseMessage());
                     }
 
@@ -127,6 +134,7 @@ public class LoginActivity extends AppCompatActivity {
                         writer.write(buffer, 0, ret_bytes);
                     }
 
+                    Log.i(tag_, writer.toString());
                     JSONObject json_auth_block = new JSONObject(writer.toString());
                     my_json_helper helper = new my_json_helper(json_auth_block);
 
@@ -155,6 +163,13 @@ public class LoginActivity extends AppCompatActivity {
                 finally {
                     connection.disconnect();
                 }
+            }
+            catch(http_redirect_t e){
+                String alt_url = e.get_alt_url();
+                Log.i(tag_, String.format("REDIRECTING to alt url:%s", alt_url));
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(alt_url)));
+                status_msg_ = "Connection problem";
+                e_ = e;
             }
             catch(Exception e){
                 status_msg_ = "Connection problem";
