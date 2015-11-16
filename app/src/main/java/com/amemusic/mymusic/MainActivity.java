@@ -1,6 +1,7 @@
 package com.amemusic.mymusic;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -48,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progress_bar_;
     String media_type_ = "MP3";
 
+    final String tag_ = "MainActivity";
+
     private void run_view(View header, grid_cols_t grid_cols) {
 
 
@@ -64,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             new grid_task(this, auth_block_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
         } catch (MalformedURLException e) {
+            Log.e(tag_, e.toString());
             tv_status_.setText("Incomplete URL");
         }
     }
@@ -457,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
             char buffer[] = new char[BUFFER_SIZE];
 
             URL url = new URL(String.format("http://tophitsdirect.com/1.0.12.0/music-downloaded.py?media_type=%s&music_id=%d&downloaded_discs=%s&user_id=%s&json=1",
-                    media.get_media_type(), media.get_music_id(), media.get_disc(), auth_block_.get_user_id()));
+                    media.get_media_type(), media.get_music_id(), Uri.encode(media.get_disc()), auth_block_.get_user_id()));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
