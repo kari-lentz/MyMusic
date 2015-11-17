@@ -88,33 +88,27 @@ public class MainActivity extends AppCompatActivity {
         return ret;
     }
 
-    private void update_progress(media_t media, int progress){
-        media_adapter_t adapter =  (media_adapter_t) lv_.getAdapter();
+    private void update_progress(media_t media, boolean transition_state_p, int progress){
 
-        if(adapter != null){
-            adapter.notifyDataSetChanged();
+        if(transition_state_p) {
+            media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
+
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+
+             media_t.states_t state = media.get_download();
+            if(state == media_t.states_t.DOWNLOADED || state == media_t.states_t.MAX_DOWNLOADS){
+                tv_status_.setText(String.format("Downloaded %s", media.get_file_name()));
+            }
+            else if(state == media_t.states_t.DOWNLOADING){
+                tv_status_.setText(String.format("Downloading %s", media.get_file_name()));
+            }
         }
 
-        if(progress >= 0) {
+        if (progress >= 0) {
             progress_bar_.setProgress(progress);
         }
-
-        String msg;
-        media_t.states_t state = media.get_download();
-        if(state == media_t.states_t.DOWNLOADED || state == media_t.states_t.MAX_DOWNLOADS){
-            msg = String.format("Downloaded %s", media.get_file_name());
-        }
-        else if(state == media_t.states_t.DOWNLOADING){
-            msg = String.format("Downloading %s", media.get_file_name());
-        }
-        else if(state == media_t.states_t.QUEUED){
-            msg = String.format("Queued %s", media.get_file_name());
-        }
-        else{
-            msg = "";
-        }
-
-        tv_status_.setText(msg);
     }
 
     private void continue_download_tasks(boolean force_new_p){
@@ -138,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 make_toast(String.format("queing %s for download", media.get_file_name()));
                 media.flag_queued();
                 media_queue_.add(media);
-                update_progress(media, -1);
+                update_progress(media, true, -1);
 
                 continue_download_tasks(false);
             }
@@ -164,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (media_queue_.remove(media)) {
                     media.flag_cancelled();
-                    update_progress(media, -1);
+                    update_progress(media, true, -1);
                     make_toast(String.format("%s no longer on download queue", media.get_file_name()));
                 }
                 else if (download_task_ != null && download_task_.getStatus() == AsyncTask.Status.RUNNING) {
@@ -447,7 +441,7 @@ public class MainActivity extends AppCompatActivity {
         void handle_cancel() {
             if (current_media_ != null && current_media_.get_download() == media_t.states_t.DOWNLOADING) {
                 current_media_.flag_cancelled();
-                update_progress(current_media_, 0);
+                update_progress(current_media_, true, 0);
                 make_toast(String.format("Download of %s cancelled in progress", current_media_.get_file_name()));
             }
 
@@ -481,7 +475,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void call() {
                         my_media.flag_downloaded(helper.try_int("CREDITS_USED"), helper.try_date("DTS_DOWNLOADED", "yyyy-MM-dd hh:mm:ss"));
-                        update_progress(my_media, 100);
+                        update_progress(my_media, true, 100);
 
                     }
                 });
@@ -510,7 +504,7 @@ public class MainActivity extends AppCompatActivity {
                     public void call() {
 
                         int percent = (progress >= 1024 && total >= 1024) ? (progress / 1024) * 100 / (total / 1024) : 0;
-                        update_progress(media, percent);
+                        update_progress(media, false, percent);
                     }
                 });
             }
@@ -531,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void call() {
                             my_media.flag_downloading();
-                            update_progress(my_media, 0);
+                            update_progress(my_media, true, 0);
                         }
                     });
 
