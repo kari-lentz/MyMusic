@@ -12,53 +12,13 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main" tools:context=".MainActivity">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/top_controls"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-
-        <TextView android:text="Ready"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/txt_status"
-            android:textColor="@color/LBL_TEXT_COLOR"
-            android:layout_alignBaseline="@+id/btn_fetch_media"
-            android:layout_alignBottom="@+id/btn_fetch_media"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Releases"
-            android:id="@+id/txt_title_media_list"
-            android:textColor="@color/CONTROL_LABEL_COLOR"
-            android:textSize="@dimen/CONTROL_LABEL_FONT_SIZE"
-            android:textStyle="bold"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Songs"
-            android:id="@+id/btn_fetch_media"
-            android:textColor="@color/BTN_TEXT_COLOR"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:textSize="10sp" />
-
-    </RelativeLayout>
-
     <ProgressBar
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:id="@+id/progress_download"
         android:layout_width = "match_parent"
         android:layout_height="wrap_content"
-    />
+        android:maxHeight="5dip"
+        android:minHeight="5dip" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"

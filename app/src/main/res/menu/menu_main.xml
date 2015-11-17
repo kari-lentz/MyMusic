@@ -7,4 +7,6 @@
         android:orderInCategory="101" app:showAsAction="never" />
     <item android:id="@+id/action_cancel" android:title="@string/action_cancel"
         android:orderInCategory="102" app:showAsAction="never" />
+    <item android:id="@+id/action_refresh" android:title="@string/action_refresh"
+        android:orderInCategory="103" app:showAsAction="never" />
 </menu>

@@ -44,14 +44,16 @@ public class MainActivity extends AppCompatActivity {
     ConcurrentLinkedQueue<media_t> media_queue_ = new ConcurrentLinkedQueue<>();
     download_task download_task_ = null;
 
+    View header_;
     TextView tv_status_;
     ListView lv_;
+    grid_cols_t grid_cols_;
     ProgressBar progress_bar_;
     String media_type_ = "MP3";
 
     final String tag_ = "MainActivity";
 
-    private void run_view(View header, grid_cols_t grid_cols) {
+    private void run_view() {
 
 
         lv_.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         try {
-            new grid_task(this, auth_block_, header, grid_cols).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+            new grid_task(this, auth_block_, header_, grid_cols_).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
         } catch (MalformedURLException e) {
             Log.e(tag_, e.toString());
             tv_status_.setText("Incomplete URL");
@@ -177,6 +179,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void refresh(){
+        TextView tv = (TextView) findViewById(R.id.txt_status);
+        tv.setText("Loading ...");
+        run_view();
+    }
+
     private void make_toast(String msg) {
         Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
     }
@@ -196,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
         progress_bar_ = (ProgressBar) findViewById(R.id.progress_download);
         lv_= (ListView) findViewById(R.id.lv_media);
 
-        final grid_cols_t grid_cols = new grid_cols_t(new grid_col_t[]{
+        grid_cols_ = new grid_cols_t(new grid_col_t[]{
                 new grid_col_download_t(this, auth_block_, 150),
                 new grid_col_date_t(this, "DTS_RELEASED", "Impact Date", 80),
                 new grid_col_title_t(this, 200),
@@ -211,18 +219,18 @@ public class MainActivity extends AppCompatActivity {
                 new grid_col_t(this, "CHART", "Chart", 100, grid_col_t.types_t.STRING)
         });
 
-        final View header= findViewById(R.id.lv_media_header);
-        int header_color = ContextCompat.getColor(header.getContext(), R.color.GRID_HEADER_BACKGROUND_COLOR);
-        header.setBackgroundColor(header_color);
+        header_= findViewById(R.id.lv_media_header);
+        int header_color = ContextCompat.getColor(header_.getContext(), R.color.GRID_HEADER_BACKGROUND_COLOR);
+        header_.setBackgroundColor(header_color);
 
-        grid_cols.rewind();
+        grid_cols_.rewind();
 
-        while(grid_cols.has_next()) {
+        while(grid_cols_.has_next()) {
 
-            final grid_col_t col = grid_cols.next();
+            final grid_col_t col = grid_cols_.next();
 
-            final View header_col = View.inflate(header.getContext(), R.layout.lv_media_col, null);
-            ((ViewGroup) header).addView(header_col);
+            final View header_col = View.inflate(header_.getContext(), R.layout.lv_media_col, null);
+            ((ViewGroup) header_).addView(header_col);
             TextView tv = (TextView) header_col.findViewById(R.id.lv_media_col);
             tv.setText(col.get_header());
 
@@ -278,16 +286,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button btn = (Button) findViewById(R.id.btn_fetch_media);
-        btn.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        TextView tv = (TextView) findViewById(R.id.txt_status);
-                        tv.setText("Loading ...");
-                        run_view(header, grid_cols);
-                        }});
-
+        refresh();
     }
 
     @Override
@@ -319,6 +318,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_cancel:
                 cancel_download_task();
                 ret = true;
+                break;
+            case R.id.action_refresh:
+                refresh();
+                ret= true;
                 break;
             default:
                 ret= super.onOptionsItemSelected(item);
