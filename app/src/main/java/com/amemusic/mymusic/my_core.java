@@ -10,7 +10,7 @@ import java.util.Date;
  * Created by klentz on 11/6/15.
  */
 public class my_core {
-    static public int BUFFER_SIZE = 65536;
+    static public int BUFFER_SIZE = 2 * 1024;
 
     static private String months_ [] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
 

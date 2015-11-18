@@ -44,6 +44,14 @@ public class media_adapter_t extends BaseAdapter {
         selected_color_ = ContextCompat.getColor(context, R.color.GRID_SELECTED_BACKGROUND_COLOR);
     }
 
+    void set_media_list(ArrayList<media_t> media_list){
+        media_list_ = media_list;
+
+        if(selected_position_ >= media_list.size()){
+            selected_position_ = -1;
+        }
+    }
+
     public int get_selected_position(){
         return selected_position_;
     }

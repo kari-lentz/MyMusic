@@ -18,13 +18,15 @@ public class my_song_reader {
 
     private auth_block_t auth_block_;
     private grid_cols_t grid_cols_;
+    MainActivity.media_factory_i media_factory_;
 
     private media_t read_song(JSONObject row) {
-        
-        media_t ret = new media_t(auth_block_);
+
         my_json_helper helper = new my_json_helper(row);
 
-        ret.set_music_id(helper.try_int("MUSIC_ID"));
+        int music_id = helper.try_int("MUSIC_ID");
+        media_t ret = media_factory_.media_factory(music_id);
+
         ret.set_media_type(helper.try_string("MEDIA_TYPE"));
         ret.set_disc(helper.try_string("DISC"));
         ret.set_title(helper.try_string("TITLE"));
@@ -64,10 +66,11 @@ public class my_song_reader {
         return ret;
     }
 
-    public my_song_reader(auth_block_t auth_block, grid_cols_t grid_cols)
+    public my_song_reader(auth_block_t auth_block, grid_cols_t grid_cols, MainActivity.media_factory_i media_factory)
     {
         auth_block_ = auth_block;
         grid_cols_ = grid_cols;
+        media_factory_ = media_factory;
     }
 
     public ArrayList<media_t> call(String in) throws JSONException {

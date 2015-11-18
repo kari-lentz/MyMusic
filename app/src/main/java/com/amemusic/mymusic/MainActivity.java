@@ -34,10 +34,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity {
 
+    Context context_;
     auth_block_t auth_block_;
     String password_;
     resize_context_t resize_context_ = null;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     grid_cols_t grid_cols_;
     ProgressBar progress_bar_;
     String media_type_ = "MP3";
+    Hashtable<Integer, media_t> ht_media_= new Hashtable<Integer, media_t>();;
 
     final String tag_ = "MainActivity";
 
@@ -169,10 +172,10 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                new grid_task(this, auth_block_, header_, grid_cols_).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+                new grid_task().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
             }
             else{
-                new grid_task(this, auth_block_, header_, grid_cols_).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+                new grid_task().execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
             }
 
         } catch (MalformedURLException e) {
@@ -189,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        context_ = this;
         auth_block_ = (auth_block_t) getIntent().getSerializableExtra(String.format("%s.auth_block", this.getPackageName()));
         password_ = getIntent().getStringExtra(String.format("%s.password", this.getPackageName()));
 
@@ -336,29 +340,40 @@ public class MainActivity extends AppCompatActivity {
         return ret;
     }
 
+    interface media_factory_i{
+        media_t media_factory(int music_id);
+    }
+
     /**
      * Created by klentz on 10/29/15.
      */
-    public class grid_task extends AsyncTask<URL, Integer, ArrayList<media_t>> {
+    public class grid_task extends AsyncTask<URL, Integer, ArrayList<media_t>> implements media_factory_i{
 
-        private Context context_;
-        private auth_block_t auth_block_;
-        private View header_;
-        private grid_cols_t grid_cols_;
         Exception e_;
 
-        public grid_task(Context context, auth_block_t auth_block, View header, grid_cols_t grid_cols){
+        public grid_task(){
             super();
-
-            context_ = context;
-            auth_block_ = auth_block;
-            header_ = header;
-            grid_cols_ = grid_cols;
 
             e_ = null;
         }
 
-        private ArrayList<media_t> fetch_media(URL url) throws MalformedURLException, IOException, JSONException {
+        public media_t media_factory(int music_id){
+            media_t ret;
+            media_t media = ht_media_.get(music_id);
+
+            if(media != null) {
+                ret =  media;
+            }
+            else{
+                ret =  new media_t(auth_block_);
+                ht_media_.put(music_id, ret);
+                ret.set_music_id(music_id);
+            }
+
+            return ret;
+        }
+
+        private ArrayList<media_t> fetch_media(URL url) throws  IOException, JSONException {
 
             final int BUFFER_SIZE=my_core.BUFFER_SIZE;
             char buffer []= new char[BUFFER_SIZE];
@@ -379,7 +394,8 @@ public class MainActivity extends AppCompatActivity {
                     } finally {
                         isr.close();
                     }
-                    return (new my_song_reader(auth_block_, grid_cols_)).call(writer.toString());
+                    Log.i(tag_, "fetched media info");
+                    return (new my_song_reader(auth_block_, grid_cols_, this)).call(writer.toString());
                 }
                 finally {
                     writer.getBuffer().setLength(0);
@@ -410,15 +426,24 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(ArrayList<media_t> media_list){
 
             if(e_ == null) {
-
                 ViewGroup.LayoutParams params = header_.getLayoutParams();
                 params.width = ViewGroup.LayoutParams.MATCH_PARENT;
                 header_.setLayoutParams(params);
 
-                media_adapter_t adapter = new media_adapter_t(context_, grid_cols_, media_list);
+                media_adapter_t adapter = (media_adapter_t) lv_.getAdapter();
+
+                if(adapter != null) {
+                    adapter.set_media_list(media_list);
+                }
+                else {
+                    adapter = new media_adapter_t(context_, grid_cols_, media_list);
+                    lv_.setAdapter(adapter);
+                }
+
                 tv_status_.setText("Ready");
-                lv_.setAdapter(adapter);
-            }else {
+
+            }
+            else {
                 tv_status_.setText("Server Error");
 
                 Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
