@@ -118,8 +118,6 @@ public class LoginActivity extends AppCompatActivity {
 
                     int code = connection.getResponseCode();
 
-                    Log.i(tag_, String.format("after connection: %d", code));
-
                     if(code == 301 || code == 302){
                         throw new http_redirect_t(code, connection.getHeaderField("Location"), connection.getResponseMessage());
                     }
@@ -130,13 +128,18 @@ public class LoginActivity extends AppCompatActivity {
                     StringWriter writer = new StringWriter();
                     InputStream in = connection.getInputStream();
                     InputStreamReader isr = new InputStreamReader(in, "latin1");
-                    for(int ret_bytes = isr.read(buffer, 0, BUFFER_SIZE); ret_bytes != -1; ret_bytes = isr.read(buffer, 0, BUFFER_SIZE)){
-                        writer.write(buffer, 0, ret_bytes);
+                    try {
+                        for (int ret_bytes = isr.read(buffer, 0, BUFFER_SIZE); ret_bytes != -1; ret_bytes = isr.read(buffer, 0, BUFFER_SIZE)) {
+                            writer.write(buffer, 0, ret_bytes);
+                        }
+                    }
+                    finally {
+                        isr.close();
                     }
 
-                    Log.i(tag_, writer.toString());
                     JSONObject json_auth_block = new JSONObject(writer.toString());
                     my_json_helper helper = new my_json_helper(json_auth_block);
+                    writer.getBuffer().setLength(0);
 
                     String status = helper.try_string("status");
 
@@ -214,7 +217,9 @@ public class LoginActivity extends AppCompatActivity {
                 Snackbar.make(tv_status_, e_.toString(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
-
+            else{
+                Log.i(tag_, "Logged In");
+            }
         }
     }
 }

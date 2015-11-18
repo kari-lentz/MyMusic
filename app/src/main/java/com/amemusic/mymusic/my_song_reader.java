@@ -20,7 +20,7 @@ public class my_song_reader {
     private grid_cols_t grid_cols_;
 
     private media_t read_song(JSONObject row) {
-
+        
         media_t ret = new media_t(auth_block_);
         my_json_helper helper = new my_json_helper(row);
 

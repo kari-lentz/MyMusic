@@ -53,32 +53,6 @@ public class MainActivity extends AppCompatActivity {
 
     final String tag_ = "MainActivity";
 
-    private void run_view() {
-
-        lv_.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                media_adapter_t adapter = ((media_adapter_t) lv_.getAdapter());
-                if (adapter != null) {
-                    adapter.update_selected_pos(view, position);
-                }
-            }
-        });
-
-        try {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                new grid_task(this, auth_block_, header_, grid_cols_).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
-            }
-            else{
-                new grid_task(this, auth_block_, header_, grid_cols_).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
-            }
-
-        } catch (MalformedURLException e) {
-            Log.e(tag_, e.toString());
-            tv_status_.setText("Incomplete URL");
-        }
-    }
-
     private media_t fetch_selected(){
         media_t ret;
 
@@ -192,7 +166,19 @@ public class MainActivity extends AppCompatActivity {
     private void refresh(){
         TextView tv = (TextView) findViewById(R.id.txt_status);
         tv.setText("Loading ...");
-        run_view();
+
+        try {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                new grid_task(this, auth_block_, header_, grid_cols_).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+            }
+            else{
+                new grid_task(this, auth_block_, header_, grid_cols_).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+            }
+
+        } catch (MalformedURLException e) {
+            Log.e(tag_, e.toString());
+            tv_status_.setText("Incomplete URL");
+        }
     }
 
     private void make_toast(String msg) {
@@ -296,6 +282,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        lv_.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                media_adapter_t adapter = ((media_adapter_t) lv_.getAdapter());
+                if (adapter != null) {
+                    adapter.update_selected_pos(view, position);
+                }
+            }
+        });
+
         refresh();
     }
 
@@ -367,16 +363,27 @@ public class MainActivity extends AppCompatActivity {
             final int BUFFER_SIZE=my_core.BUFFER_SIZE;
             char buffer []= new char[BUFFER_SIZE];
 
+            Log.i(tag_, "fetching media");
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
             try {
                 StringWriter writer = new StringWriter();
-                InputStream in = urlConnection.getInputStream();
-                InputStreamReader isr = new InputStreamReader(in, "latin1");
-                for(int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)){
-                    writer.write(buffer, 0, ret);
+                try {
+                    InputStream in = urlConnection.getInputStream();
+                    InputStreamReader isr = new InputStreamReader(in, "latin1");
+                    try {
+                        for (int ret = isr.read(buffer, 0, BUFFER_SIZE); ret != -1; ret = isr.read(buffer, 0, BUFFER_SIZE)) {
+                            writer.write(buffer, 0, ret);
+                        }
+                    } finally {
+                        isr.close();
+                    }
+                    return (new my_song_reader(auth_block_, grid_cols_)).call(writer.toString());
                 }
-                return (new my_song_reader(auth_block_, grid_cols_)).call(writer.toString());
+                finally {
+                    writer.getBuffer().setLength(0);
+                }
             }
             finally {
                 urlConnection.disconnect();
