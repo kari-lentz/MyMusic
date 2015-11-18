@@ -9,6 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
+    android:background="@color/GRID_BACKGROUND_COLOR"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main" tools:context=".MainActivity">
 
@@ -17,8 +18,9 @@
         android:id="@+id/progress_download"
         android:layout_width = "match_parent"
         android:layout_height="wrap_content"
-        android:maxHeight="5dip"
-        android:minHeight="5dip" />
+        android:progressDrawable="@drawable/my_progress_bar"
+        android:minHeight="10dip"
+        android:maxHeight="10dip" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -50,11 +52,11 @@
                 android:layout_alignParentEnd="true"
                 android:dividerHeight="0dp"
                 android:divider="#ffffff"
-                android:background="@color/GRID_BACKGROUND_COLOR"
                 android:choiceMode="singleChoice"
                 />
 
         </LinearLayout>
 
     </HorizontalScrollView>
+
 </LinearLayout>
