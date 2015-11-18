@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="BTN_TEXT_COLOR">#1111ff</color>
-    <color name="LBL_TEXT_COLOR">#dd2222</color>
+    <color name="LBL_TEXT_COLOR">#00ff00</color>
     <color name="CONTROL_LABEL_COLOR">#005500</color>
     <color name="GRID_BACKGROUND_COLOR">#222222</color>
     <color name="GRID_SELECTED_BACKGROUND_COLOR">#8888ff</color>

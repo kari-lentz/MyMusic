@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     ListView lv_;
     grid_cols_t grid_cols_;
     ProgressBar progress_bar_;
+    TextView tv_percent_;
     String media_type_ = "MP3";
     Hashtable<Integer, media_t> ht_media_= new Hashtable<Integer, media_t>();;
 
@@ -91,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (progress >= 0) {
+            tv_percent_.setText(String.format("%d%s", progress, "%"));
             progress_bar_.setProgress(progress);
         }
     }
@@ -202,6 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
         tv_status_ = (TextView) findViewById(R.id.txt_status);
         progress_bar_ = (ProgressBar) findViewById(R.id.progress_download);
+        tv_percent_ = (TextView) findViewById(R.id.txt_percent);
         lv_= (ListView) findViewById(R.id.lv_media);
 
         grid_cols_ = new grid_cols_t(new grid_col_t[]{
