@@ -3,6 +3,7 @@ package com.amemusic.mymusic;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -16,7 +17,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void run_view() {
 
-
         lv_.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -67,7 +66,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         try {
-            new grid_task(this, auth_block_, header_, grid_cols_).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                new grid_task(this, auth_block_, header_, grid_cols_).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+            }
+            else{
+                new grid_task(this, auth_block_, header_, grid_cols_).execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+            }
+
         } catch (MalformedURLException e) {
             Log.e(tag_, e.toString());
             tv_status_.setText("Incomplete URL");
@@ -117,7 +122,12 @@ public class MainActivity extends AppCompatActivity {
         if (force_new_p || download_task_ == null || download_task_.getStatus() != AsyncTask.Status.RUNNING) {
             //start brand new download task if previous one finished
             download_task_ = new download_task(this, tv_status_, media_queue_, media_t.get_codec(), auth_block_.get_user_id(), password_);
-            download_task_.execute();
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                download_task_.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+            else {
+                download_task_.execute();
+            }
         }
     }
 
