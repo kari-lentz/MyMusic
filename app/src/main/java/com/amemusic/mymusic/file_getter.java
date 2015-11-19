@@ -128,15 +128,17 @@ public class file_getter {
         out_stream.seek(offset);
     }
 
-    public void call(URL url, File local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled{
+    public void call(URL url, File temp_file, File local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled{
 
-        Authenticator.setDefault (new Authenticator() {
+        boolean success_p = false;
+
+        Authenticator.setDefault(new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(user_id_, password_.toCharArray());
             }
         });
 
-        RandomAccessFile out_stream = new RandomAccessFile(local_file, "rw");
+         RandomAccessFile out_stream = new RandomAccessFile(temp_file, "rw");
 
         try {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -172,21 +174,27 @@ public class file_getter {
                         throw new exec_cancelled();
                     }
                 }
-            } finally {
+                success_p = true;
+             } finally {
                 connection.disconnect();
             }
         }finally{
             out_stream.close();
+
+            if(success_p) {
+                // commit file
+                temp_file.renameTo(local_file);
+            }
+
+            temp_file.delete();
         }
+
 
     }
 
     public void call(URL url, File local_dir, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled {
-        call(url, new File(local_dir, local_file));
-    }
-
-    public void call(URL url, String local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled {
-        call(url, new File(local_file));
+        String temp_file = String.format("%s.temp", local_file);
+        call(url, new File(local_dir, temp_file), new File(local_dir, local_file));
     }
 
 }

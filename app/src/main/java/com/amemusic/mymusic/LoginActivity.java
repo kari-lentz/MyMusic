@@ -153,7 +153,7 @@ public class LoginActivity extends AppCompatActivity {
                             status_msg_ = "Accout expired.  Call 800-521-2537";
                             break;
                         case "NO":
-                            status_msg_ = "Login Failure";
+                            status_msg_ = "User or password invalid";
                             ret = null;
                             break;
                         default:
