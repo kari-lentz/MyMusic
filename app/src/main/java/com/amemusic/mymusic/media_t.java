@@ -34,6 +34,7 @@ public class media_t extends Object{
     static final public String THD_URL ="http://tophitsdirect.com";
     static final public String MAIN_URL =THD_URL + "/1.0.12.0";
     static final public String DOWNLOAD_URL = THD_URL + "/download-engine";
+    static final public String RUN_URL = THD_URL + "/run";
 
     private String unc_fix(String value){
 
@@ -147,12 +148,6 @@ public class media_t extends Object{
         return ret;
     }
 
-    class bad_operation_t extends Exception{
-        bad_operation_t(String reason){
-            super(reason);
-        }
-    }
-
     class can_t {
 
         private boolean can_p_;
@@ -226,6 +221,15 @@ public class media_t extends Object{
         String edit_str = edit_.length() > 0 ? String.format(" (%s)", unc_fix(edit_)): "";
         String warning_str = warning_.length() > 0 ? " (Warning Content)" : "";
         return String.format("%s - %s%s%s.%s", unc_fix(title_), unc_fix(artist_), edit_str, warning_str, exts_.get(codec_));
+    }
+
+    public String get_working_file_name(){
+        return String.format("%s.wrk", get_file_name());
+    }
+
+
+    public String get_tag_file_name(){
+        return String.format("%s.tag", get_file_name());
     }
 
     static public String get_codec(){

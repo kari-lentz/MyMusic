@@ -466,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         TextView tv_status_;
         ConcurrentLinkedQueue<media_t> queue_;
 
-        music_getter music_getter_;
+        file_getter.music_getter music_getter_;
         Exception e_ = null;
         int ctr_ = 0;
         String tag_ = "download_task";
@@ -478,7 +478,7 @@ public class MainActivity extends AppCompatActivity {
             context_ = context;
             tv_status_ = tv_status;
             queue_ = queue;
-            music_getter_ = new music_getter(codec, user_id, password).progress(this).canceller(this);
+            music_getter_ = new file_getter.music_getter(context.getFilesDir(), codec, user_id, password).progress(this).canceller(this);
         }
 
         @Override
