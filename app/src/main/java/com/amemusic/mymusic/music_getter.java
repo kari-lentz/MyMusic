@@ -7,19 +7,18 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-class music_getter {
+class music_getter extends file_getter{
 
     private String base_url_;
-    file_getter file_getter_;
 
     music_getter(String codec, String user, String password){
-        file_getter_ = new file_getter(codec, user, password);
+        super(user, password);
         base_url_ = String.format("%s/fetch?codec=%s", media_t.DOWNLOAD_URL, codec.toLowerCase());
     }
 
     public void call(int music_id, File dest_dir, String local_file) throws IOException, parse_exception_t, http_exception_t, file_getter.exec_cancelled{
         URL url = new URL(String.format("%s&music-id=%d", base_url_, music_id));
-        file_getter_.call(url, dest_dir, local_file);
+        super.call(url, dest_dir, local_file);
     }
 
     public void call(media_t media) throws IOException, parse_exception_t, http_exception_t, ext_fs_exception_t, file_getter.exec_cancelled{
@@ -30,12 +29,12 @@ class music_getter {
     }
 
     public music_getter progress(file_getter.progress_i progress){
-        file_getter_.progress(progress);
+        super.progress(progress);
         return this;
     }
 
     public music_getter canceller(file_getter.canceller_i canceller){
-        file_getter_.canceller(canceller);
+        super.canceller(canceller);
         return this;
     }
 }

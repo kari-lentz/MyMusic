@@ -45,7 +45,7 @@ public class file_getter {
         }
     };
 
-    public file_getter(String codec, String user_id, String password){
+    public file_getter( String user_id, String password){
         user_id_ = user_id;
         password_ = password;
 
