@@ -31,6 +31,9 @@ public class media_t extends Object{
     private Hashtable<String, String> exts_;
 
     static private String codec_ = "mp3";
+    static final public String THD_URL ="http://tophitsdirect.com";
+    static final public String MAIN_URL =THD_URL + "/1.0.12.0";
+    static final public String DOWNLOAD_URL = THD_URL + "/download-engine";
 
     private String unc_fix(String value){
 

@@ -174,10 +174,10 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                new grid_task().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+                new grid_task().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new URL(String.format("%s/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_t.MAIN_URL, media_type_, auth_block_.get_user_id())));
             }
             else{
-                new grid_task().execute(new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_type_, auth_block_.get_user_id())));
+                new grid_task().execute(new URL(String.format("%s/get-media.py?media_type=%s&disc_type=ALL&user_id=%s&json=t", media_t.MAIN_URL, media_type_, auth_block_.get_user_id())));
             }
 
         } catch (MalformedURLException e) {
@@ -502,8 +502,8 @@ public class MainActivity extends AppCompatActivity {
             final int BUFFER_SIZE = my_core.BUFFER_SIZE;
             char buffer[] = new char[BUFFER_SIZE];
 
-            URL url = new URL(String.format("http://tophitsdirect.com/1.0.12.0/music-downloaded.py?media_type=%s&music_id=%d&downloaded_discs=%s&user_id=%s&json=1",
-                    media.get_media_type(), media.get_music_id(), Uri.encode(media.get_disc()), auth_block_.get_user_id()));
+            URL url = new URL(String.format("%s/music-downloaded.py?media_type=%s&music_id=%d&downloaded_discs=%s&user_id=%s&json=1",
+                    media_t.MAIN_URL, media.get_media_type(), media.get_music_id(), Uri.encode(media.get_disc()), auth_block_.get_user_id()));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 

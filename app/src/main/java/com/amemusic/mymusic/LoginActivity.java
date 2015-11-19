@@ -107,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
 
             try {
                 // TODO: attempt authentication against a network service.
-                URL url = new URL(String.format("http://tophitsdirect.com/1.0.12.0/get-auth.py?user-id=%s&password=%s", user_id_, password_));
+                URL url = new URL(String.format("%s/get-auth.py?user-id=%s&password=%s", media_t.MAIN_URL, user_id_, password_));
 
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 

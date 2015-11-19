@@ -14,7 +14,7 @@ class music_getter {
 
     music_getter(String codec, String user, String password){
         file_getter_ = new file_getter(codec, user, password);
-        base_url_ = "http://www.tophitsdirect.com/download-engine/fetch?codec=" + codec.toLowerCase();
+        base_url_ = String.format("%s/fetch?codec=%s", media_t.DOWNLOAD_URL, codec.toLowerCase());
     }
 
     public void call(int music_id, File dest_dir, String local_file) throws IOException, parse_exception_t, http_exception_t, file_getter.exec_cancelled{
