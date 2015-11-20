@@ -3,10 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
-    <item android:id="@+id/action_download" android:title="@string/action_download"
+    <item android:id="@+id/action_play" android:title="@string/action_play"
         android:orderInCategory="101" app:showAsAction="never" />
-    <item android:id="@+id/action_cancel" android:title="@string/action_cancel"
+    <item android:id="@+id/action_download" android:title="@string/action_download"
         android:orderInCategory="102" app:showAsAction="never" />
-    <item android:id="@+id/action_refresh" android:title="@string/action_refresh"
+    <item android:id="@+id/action_cancel" android:title="@string/action_cancel"
         android:orderInCategory="103" app:showAsAction="never" />
+    <item android:id="@+id/action_refresh" android:title="@string/action_refresh"
+        android:orderInCategory="104" app:showAsAction="never" />
 </menu>

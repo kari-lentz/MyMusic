@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements media_player2_t.error_notify_i {
 
     Context context_;
     auth_block_t auth_block_;
@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
     TextView tv_percent_;
     String media_type_ = "MP3";
     Hashtable<Integer, media_t> ht_media_= new Hashtable<Integer, media_t>();;
+
+    media_player2_t media_player_ = null;
 
     final String tag_ = "MainActivity";
 
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
 
-             media_t.states_t state = media.get_download();
+            media_t.states_t state = media.get_download();
             if(state == media_t.states_t.DOWNLOADED || state == media_t.states_t.MAX_DOWNLOADS){
                 tv_status_.setText(String.format("Downloaded %s", media.get_file_name()));
             }
@@ -107,6 +109,27 @@ public class MainActivity extends AppCompatActivity {
             else {
                 download_task_.execute();
             }
+        }
+    }
+
+    public void media_error_notify(String error){
+        make_toast(error);
+    }
+
+    private void play() {
+
+        media_t media = fetch_selected();
+
+        if (media != null) {
+            try {
+                media_player_.play(media);
+            }
+            catch(Exception e){
+                make_toast(e.toString());
+            }
+        }
+        else {
+            make_toast("No media selected");
         }
     }
 
@@ -204,8 +227,10 @@ public class MainActivity extends AppCompatActivity {
 
         tv_status_ = (TextView) findViewById(R.id.txt_status);
         progress_bar_ = (ProgressBar) findViewById(R.id.progress_download);
-        tv_percent_ = (TextView) findViewById(R.id.txt_percent);
+        tv_percent_ = (TextView) findViewById(R.id.txt_percent_download);
         lv_= (ListView) findViewById(R.id.lv_media);
+
+        media_player_ = ((media_player2_t) findViewById(R.id.MEDIA_PLAYER)).authorization(auth_block_.get_user_id(), password_).error_notify(this).init();
 
         grid_cols_ = new grid_cols_t(new grid_col_t[]{
                 new grid_col_download_t(this, auth_block_, 150),
@@ -296,6 +321,8 @@ public class MainActivity extends AppCompatActivity {
                 if (adapter != null) {
                     adapter.update_selected_pos(view, position);
                 }
+
+                media_player_.release();
             }
         });
 
@@ -323,6 +350,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_settings:
                 make_toast("Settings not Implemented");
                 ret = true;
+                break;
+            case R.id.action_play:
+                play();
+                ret= true;
                 break;
             case R.id.action_download:
                 start_download_tasks();

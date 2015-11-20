@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.amemusic.mymusic.media_player_t xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/GRID_BACKGROUND_COLOR"
+    android:gravity="center_horizontal"
+    tools:showIn="@layout/content_main"
+    tools:context=".MainActivity"
+    android:id="@+id/MEDIA_PLAYER">
+
+    <TextView android:text="My song - Kari Lentz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txt_title_artist"
+        android:textColor="@color/LBL_TEXT_COLOR"
+        android:textStyle="bold|italic" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ProgressBar
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:id="@+id/progress_play"
+            android:layout_width = "match_parent"
+            android:layout_height="wrap_content"
+            android:progressDrawable="@drawable/player_progress_bar"
+            android:minHeight="16dip"
+            android:maxHeight="16dip"
+             android:progress="75"
+            android:secondaryProgress="50"
+            android:layout_gravity="center" />
+
+        <TextView android:text="00:00"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_play_position"
+            android:textColor="@color/LBL_TEXT_COLOR"
+            android:textStyle="bold|italic"
+            android:textSize="12sp"
+            android:layout_gravity="left" />
+
+        <TextView android:text="03:13"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_play_duration"
+            android:textColor="@color/LBL_TEXT_COLOR"
+            android:layout_centerInParent="true"
+            android:textStyle="bold|italic"
+            android:textSize="12sp"
+            android:layout_gravity="right" />
+    </FrameLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal">
+
+        <com.amemusic.mymusic.play_button_t
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/MY_PLAY"
+            android:maxWidth="32dp"
+            android:minHeight="32dp"
+            android:minWidth="32dp" />
+
+        <com.amemusic.mymusic.stop_button_t
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/MY_STOP"
+            android:maxWidth="32dp"
+            android:minHeight="32dp"
+            android:minWidth="32dp" />
+
+    </LinearLayout>
+
+</com.amemusic.mymusic.media_player_t>
