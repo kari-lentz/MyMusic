@@ -23,8 +23,8 @@
         android:layout_width = "match_parent"
         android:layout_height="wrap_content"
         android:progressDrawable="@drawable/my_progress_bar"
-        android:minHeight="10dip"
-        android:maxHeight="10dip"
+        android:minHeight="16dip"
+        android:maxHeight="16dip"
         android:layout_centerInParent="true" />
 
         <TextView android:text=""
@@ -33,7 +33,7 @@
             android:id="@+id/txt_percent"
             android:textColor="@color/LBL_TEXT_COLOR"
             android:layout_centerInParent="true"
-            android:textStyle="italic"
+            android:textStyle="bold|italic"
             android:textSize="12sp" />
     </RelativeLayout>
 

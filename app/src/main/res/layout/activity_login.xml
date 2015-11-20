@@ -62,10 +62,11 @@
             android:buttonTint="@color/GRID_TEXT_COLOR" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Login"
             android:id="@+id/btn_login"
+            android:minWidth="@dimen/TXT_MIN_WIDTH"
             android:layout_gravity="right"
             android:textStyle="bold"
             android:textSize="16sp" />
