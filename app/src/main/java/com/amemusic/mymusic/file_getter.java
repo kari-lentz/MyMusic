@@ -192,7 +192,11 @@ public class file_getter {
         return local_file;
     }
 
-    static class media_file_getter extends file_getter {
+    public File call(URL url, File local_file) throws parse_exception_t, http_exception_t, IOException, MalformedURLException, exec_cancelled {
+        return call(url, new File(String.format("%s.temp", local_file.getAbsolutePath())), local_file);
+    }
+
+        static class media_file_getter extends file_getter {
 
         protected File temp_file_dir_;
 
@@ -215,7 +219,7 @@ public class file_getter {
             ext_fs.pass_writable();
             ext_fs.pass_readable();
             URL url = new URL(String.format("%s&music-id=%d", base_url_, media.get_music_id()));
-            return super.call(url, temp_file_dir_, new File(media.get_working_file_name()));
+            return super.call(url, new File(temp_file_dir_, media.get_working_file_name()));
         }
 
         public working_file_getter progress(progress_i progress){
@@ -243,7 +247,7 @@ public class file_getter {
             ext_fs.pass_readable();
 
             URL url = new URL(String.format("%s?music-id=%d&disc=%s", base_url_, media.get_music_id(), disc));
-            return super.call(url, temp_file_dir_, new File(media.get_tag_file_name()));
+            return super.call(url, new File(temp_file_dir_, media.get_tag_file_name()));
         }
     }
 
@@ -287,19 +291,19 @@ public class file_getter {
         void assemble_file(File working_file, File tag_file, File dest_file) throws IOException{
             final box_t  orig_id3_size = new box_t(0);
 
-
             my_core.with_open_file(
                     working_file,
                     new my_core.file_callback_i() {
                         @Override
-                        public void call(RandomAccessFile in_stream) throws IOException{
-                            if(in_stream.readUnsignedByte() == 'I' && in_stream.readUnsignedByte() == 'D' && in_stream.readUnsignedByte() == '3'){
-                                if(in_stream.readUnsignedByte() == 3){
-                                     in_stream.skipBytes(4);
-                                     orig_id3_size.set(in_stream.readUnsignedByte() * 0x80 + in_stream.readUnsignedByte() + 10);
+                        public void call(RandomAccessFile in_stream) throws IOException {
+                            if (in_stream.readUnsignedByte() == 'I' && in_stream.readUnsignedByte() == 'D' && in_stream.readUnsignedByte() == '3') {
+                                if (in_stream.readUnsignedByte() == 3) {
+                                    in_stream.skipBytes(4);
+                                    orig_id3_size.set(in_stream.readUnsignedByte() * 0x80 + in_stream.readUnsignedByte() + 10);
                                 }
                             }
-                        }},
+                        }
+                    },
                     "r");
 
             my_core.merge_files(dest_file, new my_core.merge_request_t(tag_file, 0), new my_core.merge_request_t(working_file, orig_id3_size.get()));
@@ -309,16 +313,28 @@ public class file_getter {
 
             String[] discs = media.get_disc().split("[\\s\\\\]+;");
 
-            File working = working_file_getter_.call(media);
+            File working_file = working_file_getter_.call(media);
 
-            for(int idx = 0; idx < discs.length; ++idx) {
+            try {
+                for(int idx = 0; idx < discs.length; ++idx) {
 
-                String disc = discs[idx];
+                    String disc = discs[idx];
 
-                assemble_file(
-                        working,
-                        tag_file_getter_.call(media, disc),
-                        new File(ext_fs.get_thd_dir(disc), media.get_file_name()));
+                    File tag_file = tag_file_getter_.call(media, disc);
+                    try {
+
+                        assemble_file(
+                                working_file,
+                                tag_file,
+                                new File(ext_fs.get_thd_dir(String.format("THD/%s", disc)), media.get_file_name()));
+                    }
+                    finally {
+                        tag_file.delete();
+                    }
+                }
+            }
+            finally {
+                working_file.delete();
             }
         }
     }

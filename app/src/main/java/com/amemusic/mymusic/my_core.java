@@ -92,17 +92,17 @@ public class my_core {
 
                                             in_stream.seek(r.seek());
 
-                                            for(int ret_bytes = in_stream.read(buffer, 0, BUFFER_SIZE); ret_bytes <= -1; ret_bytes = in_stream.read(buffer, 0, BUFFER_SIZE)) {
+                                            for(int ret_bytes = in_stream.read(buffer, 0, BUFFER_SIZE); ret_bytes != -1; ret_bytes = in_stream.read(buffer, 0, BUFFER_SIZE)) {
                                                 out_stream_inner.write(buffer, 0, ret_bytes);
                                             }
                                         }
                                     },
-                                    "rw"
+                                    "r"
                             );
                         }
                     }
                 },
-                "r"
+                "rw"
         );
     }
 }
