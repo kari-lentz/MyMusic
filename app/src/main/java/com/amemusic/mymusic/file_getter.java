@@ -311,7 +311,7 @@ public class file_getter {
 
         public void call(media_t media) throws IOException, parse_exception_t, http_exception_t, ext_fs_exception_t, exec_cancelled {
 
-            String[] discs = media.get_disc().split("[\\s\\\\]+;");
+            String[] discs = media.get_disc().split("[\\s\\\\]+");
 
             File working_file = working_file_getter_.call(media);
 
