@@ -227,6 +227,9 @@ public class media_t extends Object{
         return String.format("%s.wrk", get_file_name());
     }
 
+    public String get_play_link(){
+        return String.format("%s/fetch?type=stream&music-id=%d", media_t.DOWNLOAD_URL, music_id_);
+    }
 
     public String get_tag_file_name(){
         return String.format("%s.tag", get_file_name());

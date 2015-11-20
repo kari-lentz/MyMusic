@@ -1,6 +1,8 @@
 package com.amemusic.mymusic;
 
 import android.content.Context;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -55,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     String media_type_ = "MP3";
     Hashtable<Integer, media_t> ht_media_= new Hashtable<Integer, media_t>();;
 
+    final Hashtable<Integer, String> ht_media_play_errors_ = new Hashtable();
+    MediaPlayer media_player_ = null;
+
     final String tag_ = "MainActivity";
 
     private media_t fetch_selected(){
@@ -107,6 +112,83 @@ public class MainActivity extends AppCompatActivity {
             else {
                 download_task_.execute();
             }
+        }
+    }
+
+    private void load_media_play_errors() {
+
+         Hashtable ht = ht_media_play_errors_;
+
+        ht.put(MediaPlayer.MEDIA_ERROR_UNKNOWN, "Unknown");
+        ht.put(MediaPlayer.MEDIA_ERROR_SERVER_DIED, "Server Died");
+        ht.put(MediaPlayer.MEDIA_ERROR_IO, "IO");
+        ht.put(MediaPlayer.MEDIA_ERROR_MALFORMED, "Malformed");
+        ht.put(MediaPlayer.MEDIA_ERROR_UNSUPPORTED, "Unsupported");
+        ht.put(MediaPlayer.MEDIA_ERROR_TIMED_OUT, "Timed Out");
+        ht.put(-2147483648, "System");
+    }
+
+    private void play(){
+        final media_t media = fetch_selected();
+
+        if (media != null) {
+
+            try {
+                if (media_player_ == null) {
+                    media_player_ = new MediaPlayer();
+                    load_media_play_errors();
+                }
+
+                media_player_.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                media_player_.setDataSource(media.get_play_link());
+
+                media_player_.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        try {
+                            Log.i(tag_, String.format("Begin playing %s", media.get_file_name()));
+                            mp.start();
+                        } catch (Exception e) {
+                            Log.e(tag_, e.toString());
+                        }
+                    }
+                });
+
+                media_player_.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+
+                        String category = ht_media_play_errors_.get(what);
+
+                        if(category == null) {
+                            category = "Unknown Category";
+                        }
+
+                        String info = ht_media_play_errors_.get(extra);
+
+                        if(info == null) {
+                            info = "Unknown origin";
+                        }
+
+                        String descr = String.format("category: %s info: %s", category, info);
+
+                        Log.e(tag_, String.format("%s", descr));
+                        make_toast(String.format("Media play error %s", descr));
+
+                        return false;
+                    }
+                });
+
+                media_player_.prepareAsync();
+            }
+            catch (Exception e) {
+                Log.e(tag_, e.toString());
+                tv_status_.setText("Play Unsuccesful");
+                make_toast(e.toString());
+            }
+        }
+        else {
+            make_toast("no media selected");
         }
     }
 
@@ -323,6 +405,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_settings:
                 make_toast("Settings not Implemented");
                 ret = true;
+                break;
+            case R.id.action_play:
+                play();
+                ret= true;
                 break;
             case R.id.action_download:
                 start_download_tasks();
