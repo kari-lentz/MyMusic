@@ -11,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -36,7 +37,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity {
@@ -140,7 +143,24 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 media_player_.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                media_player_.setDataSource(media.get_play_link());
+
+                // encrypt Authdata
+                byte[] toEncrypt = (String.format("%s:%s", auth_block_.get_user_id(), password_)).getBytes();
+                String encoded = Base64.encodeToString(toEncrypt, Base64.DEFAULT);
+
+                // create header
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Basic " + encoded);
+
+                Uri uri = Uri.parse(media.get_play_link());
+
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                    media_player_.setDataSource(this, uri, headers);
+                }
+                else
+                {
+                    throw new Exception("Currently must have Ice Cream Sandwich or higher to enjoy media play");
+                }
 
                 media_player_.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
