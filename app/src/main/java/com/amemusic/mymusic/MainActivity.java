@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
 
         tv_status_ = (TextView) findViewById(R.id.txt_status);
         progress_bar_ = (ProgressBar) findViewById(R.id.progress_download);
-        tv_percent_ = (TextView) findViewById(R.id.txt_percent);
+        tv_percent_ = (TextView) findViewById(R.id.txt_percent_download);
         lv_= (ListView) findViewById(R.id.lv_media);
 
         grid_cols_ = new grid_cols_t(new grid_col_t[]{

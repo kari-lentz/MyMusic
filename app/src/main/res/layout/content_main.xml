@@ -13,29 +13,38 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main" tools:context=".MainActivity">
 
-    <RelativeLayout
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true">
 
-    <ProgressBar
-        style="@android:style/Widget.ProgressBar.Horizontal"
-        android:id="@+id/progress_download"
-        android:layout_width = "match_parent"
-        android:layout_height="wrap_content"
-        android:progressDrawable="@drawable/my_progress_bar"
-        android:minHeight="16dip"
-        android:maxHeight="16dip"
-        android:layout_centerInParent="true" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <TextView android:text=""
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/txt_percent"
-            android:textColor="@color/LBL_TEXT_COLOR"
-            android:layout_centerInParent="true"
-            android:textStyle="bold|italic"
-            android:textSize="12sp" />
-    </RelativeLayout>
+            <ProgressBar
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:id="@+id/progress_download"
+                android:layout_width = "match_parent"
+                android:layout_height="wrap_content"
+                android:progressDrawable="@drawable/my_progress_bar"
+                android:minHeight="16dip"
+                android:maxHeight="16dip"
+                android:layout_centerInParent="true" />
+
+            <TextView android:text=""
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_percent_download"
+                android:textColor="@color/LBL_TEXT_COLOR"
+                android:layout_centerInParent="true"
+                android:textStyle="bold|italic"
+                android:textSize="12sp" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
 
     <HorizontalScrollView
         android:layout_width="match_parent"
