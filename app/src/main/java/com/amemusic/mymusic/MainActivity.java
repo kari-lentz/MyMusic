@@ -42,7 +42,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements media_player_t.error_notify_i {
 
     Context context_;
     auth_block_t auth_block_;
@@ -60,8 +60,7 @@ public class MainActivity extends AppCompatActivity {
     String media_type_ = "MP3";
     Hashtable<Integer, media_t> ht_media_= new Hashtable<Integer, media_t>();;
 
-    final Hashtable<Integer, String> ht_media_play_errors_ = new Hashtable();
-    MediaPlayer media_player_ = null;
+    media_player_t media_player_ = null;
 
     final String tag_ = "MainActivity";
 
@@ -90,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
 
-             media_t.states_t state = media.get_download();
+            media_t.states_t state = media.get_download();
             if(state == media_t.states_t.DOWNLOADED || state == media_t.states_t.MAX_DOWNLOADS){
                 tv_status_.setText(String.format("Downloaded %s", media.get_file_name()));
             }
@@ -118,104 +117,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void load_media_play_errors() {
-
-         Hashtable ht = ht_media_play_errors_;
-
-        ht.put(MediaPlayer.MEDIA_ERROR_UNKNOWN, "Unknown");
-        ht.put(MediaPlayer.MEDIA_ERROR_SERVER_DIED, "Server Died");
-        ht.put(MediaPlayer.MEDIA_ERROR_IO, "IO");
-        ht.put(MediaPlayer.MEDIA_ERROR_MALFORMED, "Malformed");
-        ht.put(MediaPlayer.MEDIA_ERROR_UNSUPPORTED, "Unsupported");
-        ht.put(MediaPlayer.MEDIA_ERROR_TIMED_OUT, "Timed Out");
-        ht.put(-2147483648, "System");
+    public void media_error_notify(String error){
+        make_toast(error);
     }
 
-    private void play(){
-        //media_player_t media_player = (media_player_t) findViewById(R.id.MEDIA_PLAYER);
-        //media_player.setVisibility(View.VISIBLE);
+    private void play() {
 
-        play2();
-    }
-
-    private void play2(){
-        final media_t media = fetch_selected();
+        media_t media = fetch_selected();
 
         if (media != null) {
-
             try {
-                if (media_player_ == null) {
-                    media_player_ = new MediaPlayer();
-                    load_media_play_errors();
-                }
-
-                media_player_.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-                // encrypt Authdata
-                byte[] toEncrypt = (String.format("%s:%s", auth_block_.get_user_id(), password_)).getBytes();
-                String encoded = Base64.encodeToString(toEncrypt, Base64.DEFAULT);
-
-                // create header
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Basic " + encoded);
-
-                Uri uri = Uri.parse(media.get_play_link());
-
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                    media_player_.setDataSource(this, uri, headers);
-                }
-                else
-                {
-                    throw new Exception("Currently must have Ice Cream Sandwich or higher to enjoy media play");
-                }
-
-                media_player_.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        try {
-                            Log.i(tag_, String.format("Begin playing %s", media.get_file_name()));
-                            mp.start();
-                        } catch (Exception e) {
-                            Log.e(tag_, e.toString());
-                        }
-                    }
-                });
-
-                media_player_.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                    @Override
-                    public boolean onError(MediaPlayer mp, int what, int extra) {
-
-                        String category = ht_media_play_errors_.get(what);
-
-                        if(category == null) {
-                            category = "Unknown Category";
-                        }
-
-                        String info = ht_media_play_errors_.get(extra);
-
-                        if(info == null) {
-                            info = "Unknown origin";
-                        }
-
-                        String descr = String.format("category: %s info: %s", category, info);
-
-                        Log.e(tag_, String.format("%s", descr));
-                        make_toast(String.format("Media play error %s", descr));
-
-                        return false;
-                    }
-                });
-
-                media_player_.prepareAsync();
+                media_player_.play(media);
             }
-            catch (Exception e) {
-                Log.e(tag_, e.toString());
-                tv_status_.setText("Play Unsuccesful");
+            catch(Exception e){
                 make_toast(e.toString());
             }
         }
         else {
-            make_toast("no media selected");
+            make_toast("No media selected");
         }
     }
 
@@ -316,8 +235,7 @@ public class MainActivity extends AppCompatActivity {
         tv_percent_ = (TextView) findViewById(R.id.txt_percent_download);
         lv_= (ListView) findViewById(R.id.lv_media);
 
-        media_player_t media_player = (media_player_t) findViewById(R.id.MEDIA_PLAYER);
-        media_player.setVisibility(View.INVISIBLE);
+        media_player_ = new media_player_t(context_, (media_player_view_t) findViewById(R.id.MEDIA_PLAYER), this).set_authorization(auth_block_.get_user_id(), password_);
 
         grid_cols_ = new grid_cols_t(new grid_col_t[]{
                 new grid_col_download_t(this, auth_block_, 150),
@@ -409,8 +327,7 @@ public class MainActivity extends AppCompatActivity {
                     adapter.update_selected_pos(view, position);
                 }
 
-                View media_player = findViewById(R.id.MEDIA_PLAYER);
-                media_player.setVisibility(View.INVISIBLE);
+                media_player_.release();
             }
         });
 
