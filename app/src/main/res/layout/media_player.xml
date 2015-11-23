@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.amemusic.mymusic.media_player_t xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:background="@color/GRID_BACKGROUND_COLOR"
-    android:gravity="center_horizontal">
+    android:gravity="center_horizontal"
+    tools:showIn="@layout/content_main"
+    tools:context=".MainActivity"
+    android:id="@+id/MEDIA_PLAYER">
 
     <TextView android:text="My song - Kari Lentz"
         android:layout_width="wrap_content"
@@ -39,10 +43,10 @@
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal" android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center_horizontal">
 
-        <com.amemusic.mymusic.media_player_t.play_button_t
+        <com.amemusic.mymusic.play_button_t
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/MY_PLAY"
@@ -50,7 +54,7 @@
             android:minHeight="32dp"
             android:minWidth="32dp" />
 
-        <com.amemusic.mymusic.media_player_t.stop_button_t
+        <com.amemusic.mymusic.stop_button_t
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/MY_STOP"

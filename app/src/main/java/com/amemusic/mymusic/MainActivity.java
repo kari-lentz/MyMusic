@@ -132,6 +132,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void play(){
+        //media_player_t media_player = (media_player_t) findViewById(R.id.MEDIA_PLAYER);
+        //media_player.setVisibility(View.VISIBLE);
+
+        play2();
+    }
+
+    private void play2(){
         final media_t media = fetch_selected();
 
         if (media != null) {
@@ -309,6 +316,9 @@ public class MainActivity extends AppCompatActivity {
         tv_percent_ = (TextView) findViewById(R.id.txt_percent_download);
         lv_= (ListView) findViewById(R.id.lv_media);
 
+        media_player_t media_player = (media_player_t) findViewById(R.id.MEDIA_PLAYER);
+        media_player.setVisibility(View.INVISIBLE);
+
         grid_cols_ = new grid_cols_t(new grid_col_t[]{
                 new grid_col_download_t(this, auth_block_, 150),
                 new grid_col_date_t(this, "DTS_RELEASED", "Impact Date", 80),
@@ -398,6 +408,9 @@ public class MainActivity extends AppCompatActivity {
                 if (adapter != null) {
                     adapter.update_selected_pos(view, position);
                 }
+
+                View media_player = findViewById(R.id.MEDIA_PLAYER);
+                media_player.setVisibility(View.INVISIBLE);
             }
         });
 
