@@ -5,26 +5,27 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.util.AttributeSet;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * Created by klentz on 11/23/15.
+ * Created by klentz on 11/22/15.
  */
-public class media_player_t {
+public class media_player_t extends LinearLayout {
+
 
     interface error_notify_i{
         void media_error_notify(String error);
     }
 
-    Context context_;
     private MediaPlayer player_ = null;
-    private media_player_view_t view_;
     error_notify_i error_notify_;
     final Hashtable<Integer, String> ht_errors_ = new Hashtable();
 
@@ -32,10 +33,8 @@ public class media_player_t {
 
     String tag_ = "media_player_t";
 
-    public media_player_t(Context context, media_player_view_t view, error_notify_i error_notify){
-        context_ = context;
-        view_ = view;
-        error_notify_ = error_notify;
+    public media_player_t(Context context, AttributeSet attrs){
+        super(context, attrs);
 
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_UNKNOWN, "Unknown");
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_SERVER_DIED, "Server Died");
@@ -45,18 +44,23 @@ public class media_player_t {
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_TIMED_OUT, "Timed Out");
         ht_errors_.put(-2147483648, "System");
 
-        view_.setVisibility(View.INVISIBLE);
+        this.setVisibility(View.INVISIBLE);
     }
 
-    media_player_t set_authorization(String user_id, String password){
+    media_player_t authorization(String user_id, String password){
 
         // encrypt Authdata
         byte[] toEncrypt = (String.format("%s:%s", user_id, password)).getBytes();
         String encoded = Base64.encodeToString(toEncrypt, Base64.DEFAULT);
 
         // create header
-         headers_.put("Authorization", "Basic " + encoded);
+        headers_.put("Authorization", "Basic " + encoded);
 
+        return this;
+    }
+
+    media_player_t error_notify(error_notify_i error_notify){
+        error_notify_ = error_notify;
         return this;
     }
 
@@ -69,7 +73,7 @@ public class media_player_t {
         }
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            player_.setDataSource(context_, uri, headers_);
+            player_.setDataSource(getContext(), uri, headers_);
         }
         else
         {
@@ -116,11 +120,11 @@ public class media_player_t {
         });
 
         player_.prepareAsync();
-        view_.setVisibility(View.VISIBLE);
+        this.setVisibility(View.VISIBLE);
     }
 
     public void release(){
-        view_.setVisibility(View.INVISIBLE);
+        this.setVisibility(View.INVISIBLE);
 
         if(player_ != null) {
             player_.release();

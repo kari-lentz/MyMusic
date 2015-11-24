@@ -1,8 +1,6 @@
 package com.amemusic.mymusic;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -11,7 +9,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -37,9 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity implements media_player_t.error_notify_i {
@@ -235,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements media_player_t.er
         tv_percent_ = (TextView) findViewById(R.id.txt_percent_download);
         lv_= (ListView) findViewById(R.id.lv_media);
 
-        media_player_ = new media_player_t(context_, (media_player_view_t) findViewById(R.id.MEDIA_PLAYER), this).set_authorization(auth_block_.get_user_id(), password_);
+        media_player_ = ((media_player_t) findViewById(R.id.MEDIA_PLAYER)).authorization(auth_block_.get_user_id(), password_).error_notify(this);
 
         grid_cols_ = new grid_cols_t(new grid_col_t[]{
                 new grid_col_download_t(this, auth_block_, 150),
