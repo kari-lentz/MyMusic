@@ -26,10 +26,12 @@
             android:id="@+id/progress_play"
             android:layout_width = "match_parent"
             android:layout_height="wrap_content"
-            android:progressDrawable="@drawable/my_progress_bar"
+            android:progressDrawable="@drawable/player_progress_bar"
             android:minHeight="16dip"
             android:maxHeight="16dip"
-            android:layout_centerInParent="true" />
+            android:layout_centerInParent="true"
+            android:progress="75"
+            android:secondaryProgress="50" />
 
         <TextView android:text=""
             android:layout_width="wrap_content"
