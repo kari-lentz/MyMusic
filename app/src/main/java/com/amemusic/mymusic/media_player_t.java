@@ -9,7 +9,10 @@ import android.util.AttributeSet;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -31,6 +34,12 @@ public class media_player_t extends LinearLayout {
 
     Map<String, String> headers_ = new HashMap<>();
 
+    TextView tv_title_artist_ = null;
+    ProgressBar progress_play_ = null;
+    TextView tv_play_position_ = null;
+    TextView tv_play_duration_ = null;
+    Button btn_play_ = null;
+    Button btn_stop_ = null;
     String tag_ = "media_player_t";
 
     public media_player_t(Context context, AttributeSet attrs){
@@ -44,7 +53,7 @@ public class media_player_t extends LinearLayout {
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_TIMED_OUT, "Timed Out");
         ht_errors_.put(-2147483648, "System");
 
-        this.setVisibility(View.INVISIBLE);
+        this.setVisibility(isInEditMode() ? View.VISIBLE : View.INVISIBLE);
     }
 
     media_player_t authorization(String user_id, String password){
@@ -62,6 +71,40 @@ public class media_player_t extends LinearLayout {
     media_player_t error_notify(error_notify_i error_notify){
         error_notify_ = error_notify;
         return this;
+    }
+
+    media_player_t init()
+    {
+        if(!isInEditMode()) {
+            tv_title_artist_ = (TextView) findViewById(R.id.txt_title_artist);
+            progress_play_ = (ProgressBar) findViewById(R.id.progress_play);
+            tv_play_position_ = (TextView) findViewById(R.id.txt_play_position);
+            tv_play_duration_ = (TextView) findViewById(R.id.txt_play_duration);
+            btn_play_ = (Button) findViewById(R.id.MY_PLAY);
+            btn_stop_ = (Button) findViewById(R.id.MY_STOP);
+
+            tv_title_artist_.setText("");
+
+            progress_play_.setProgress(0);
+            progress_play_.setSecondaryProgress(0);
+
+            tv_play_duration_ .setText("00:00");
+            tv_play_position_.setText("00:00");
+
+            this.setVisibility(INVISIBLE);
+        }
+        return this;
+    }
+
+    void update_control_states(){
+        btn_play_.setEnabled(!player_.isPlaying());
+        btn_stop_.setEnabled(player_.isPlaying());
+    }
+
+    static String format_ms(int ms){
+        int s = ms / 1000;
+        int m = s / 60;
+        return String.format("%02d:%02d", m, s - m * 60);
     }
 
     public void play(media_t media) throws Exception{
@@ -82,6 +125,13 @@ public class media_player_t extends LinearLayout {
 
         final media_t my_media = media;
 
+        player_.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+            @Override
+            public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                progress_play_.setProgress(percent);
+            }
+        });
+
         player_.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
@@ -91,6 +141,8 @@ public class media_player_t extends LinearLayout {
                 } catch (Exception e) {
                     Log.e(tag_, e.toString());
                 }
+
+                tv_play_duration_.setText(format_ms(player_.getDuration()));
             }
         });
 
@@ -113,14 +165,27 @@ public class media_player_t extends LinearLayout {
                 String descr = String.format("category: %s info: %s", category, info);
 
                 Log.e(tag_, String.format("%s", descr));
-                error_notify_.media_error_notify(String.format("Media play error %s", descr));
+                if (error_notify_ != null) {
+                    error_notify_.media_error_notify(String.format("Media play error %s", descr));
+                }
 
                 return false;
+            }
+
+        });
+
+        player_.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                progress_play_.setSecondaryProgress(100);
             }
         });
 
         player_.prepareAsync();
         this.setVisibility(View.VISIBLE);
+        String edit = media.get_edit().isEmpty() ? "" : String.format(" (%s)", media.get_edit());
+        tv_title_artist_.setText(String.format("%s - %s%s", media.get_title(), media.get_artist(), edit));
+        update_control_states();
     }
 
     public void release(){

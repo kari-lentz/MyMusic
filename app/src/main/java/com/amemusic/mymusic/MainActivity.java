@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements media_player_t.er
         tv_percent_ = (TextView) findViewById(R.id.txt_percent_download);
         lv_= (ListView) findViewById(R.id.lv_media);
 
-        media_player_ = ((media_player_t) findViewById(R.id.MEDIA_PLAYER)).authorization(auth_block_.get_user_id(), password_).error_notify(this);
+        media_player_ = ((media_player_t) findViewById(R.id.MEDIA_PLAYER)).authorization(auth_block_.get_user_id(), password_).error_notify(this).init();
 
         grid_cols_ = new grid_cols_t(new grid_col_t[]{
                 new grid_col_download_t(this, auth_block_, 150),

@@ -17,7 +17,7 @@
         android:textColor="@color/LBL_TEXT_COLOR"
         android:textStyle="bold|italic" />
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -29,19 +29,29 @@
             android:progressDrawable="@drawable/player_progress_bar"
             android:minHeight="16dip"
             android:maxHeight="16dip"
-            android:layout_centerInParent="true"
-            android:progress="75"
-            android:secondaryProgress="50" />
+             android:progress="75"
+            android:secondaryProgress="50"
+            android:layout_gravity="center" />
 
-        <TextView android:text=""
+        <TextView android:text="00:00"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/txt_percent_play"
+            android:id="@+id/txt_play_position"
+            android:textColor="@color/LBL_TEXT_COLOR"
+            android:textStyle="bold|italic"
+            android:textSize="12sp"
+            android:layout_gravity="left" />
+
+        <TextView android:text="03:13"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_play_duration"
             android:textColor="@color/LBL_TEXT_COLOR"
             android:layout_centerInParent="true"
             android:textStyle="bold|italic"
-            android:textSize="12sp" />
-    </RelativeLayout>
+            android:textSize="12sp"
+            android:layout_gravity="right" />
+    </FrameLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal" android:layout_width="match_parent"
