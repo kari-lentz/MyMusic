@@ -32,7 +32,7 @@ public class media_player_t extends LinearLayout {
     error_notify_i error_notify_;
     final Hashtable<Integer, String> ht_errors_ = new Hashtable();
 
-    Map<String, String> headers_ = new HashMap<>();
+    String creds_ = "";
 
     TextView tv_title_artist_ = null;
     ProgressBar progress_play_ = null;
@@ -60,10 +60,7 @@ public class media_player_t extends LinearLayout {
 
         // encrypt Authdata
         byte[] toEncrypt = (String.format("%s:%s", user_id, password)).getBytes();
-        String encoded = Base64.encodeToString(toEncrypt, Base64.DEFAULT);
-
-        // create header
-        headers_.put("Authorization", "Basic " + encoded);
+        creds_ = Base64.encodeToString(toEncrypt, Base64.DEFAULT);
 
         return this;
     }
@@ -108,7 +105,7 @@ public class media_player_t extends LinearLayout {
     }
 
     public void play(media_t media) throws Exception{
-        Uri uri = Uri.parse(media.get_play_link());
+        String url = String.format("%s&creds=%s", media.get_play_link(), creds_);
 
         if(player_ == null) {
             player_ = new MediaPlayer();
@@ -116,7 +113,7 @@ public class media_player_t extends LinearLayout {
         }
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            player_.setDataSource(getContext(), uri, headers_);
+            player_.setDataSource(url);
         }
         else
         {

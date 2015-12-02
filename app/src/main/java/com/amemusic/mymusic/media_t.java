@@ -34,6 +34,7 @@ public class media_t extends Object{
     static final public String THD_URL ="http://tophitsdirect.com";
     static final public String MAIN_URL =THD_URL + "/1.0.12.0";
     static final public String DOWNLOAD_URL = THD_URL + "/download-engine";
+    static final public String PLAY_URL = THD_URL + "/download-engine-auth";
     static final public String RUN_URL = THD_URL + "/run";
 
     private String unc_fix(String value){
@@ -228,7 +229,7 @@ public class media_t extends Object{
     }
 
     public String get_play_link(){
-        return String.format("%s/fetch?type=stream&music-id=%d", media_t.DOWNLOAD_URL, music_id_);
+        return String.format("%s/fetch?type=stream&music-id=%d", media_t.PLAY_URL, music_id_);
     }
 
     public String get_tag_file_name(){
