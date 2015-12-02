@@ -322,11 +322,20 @@ public class MainActivity extends AppCompatActivity implements media_player_t.er
                     adapter.update_selected_pos(view, position);
                 }
 
-                media_player_.release();
+                media_player_.reset();
             }
         });
 
         refresh();
+    }
+
+    @Override()
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(media_player_ != null){
+            media_player_.release();
+        }
     }
 
     @Override

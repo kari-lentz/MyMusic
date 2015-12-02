@@ -45,6 +45,9 @@ public class media_player_t extends LinearLayout {
     public media_player_t(Context context, AttributeSet attrs){
         super(context, attrs);
 
+        player_ = new MediaPlayer();
+        player_.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_UNKNOWN, "Unknown");
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_SERVER_DIED, "Server Died");
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_IO, "IO");
@@ -70,57 +73,30 @@ public class media_player_t extends LinearLayout {
         return this;
     }
 
+    public void reset(){
+
+        player_.stop();
+        player_.reset();
+
+        tv_title_artist_ = (TextView) findViewById(R.id.txt_title_artist);
+        progress_play_ = (ProgressBar) findViewById(R.id.progress_play);
+        tv_play_position_ = (TextView) findViewById(R.id.txt_play_position);
+        tv_play_duration_ = (TextView) findViewById(R.id.txt_play_duration);
+        btn_play_ = (Button) findViewById(R.id.MY_PLAY);
+        btn_stop_ = (Button) findViewById(R.id.MY_STOP);
+
+        progress_play_.setProgress(0);
+        progress_play_.setSecondaryProgress(0);
+
+        tv_play_duration_ .setText("00:00");
+        tv_play_position_.setText("00:00");
+
+        this.setVisibility(INVISIBLE);
+    }
+
     media_player_t init()
     {
-        if(!isInEditMode()) {
-            tv_title_artist_ = (TextView) findViewById(R.id.txt_title_artist);
-            progress_play_ = (ProgressBar) findViewById(R.id.progress_play);
-            tv_play_position_ = (TextView) findViewById(R.id.txt_play_position);
-            tv_play_duration_ = (TextView) findViewById(R.id.txt_play_duration);
-            btn_play_ = (Button) findViewById(R.id.MY_PLAY);
-            btn_stop_ = (Button) findViewById(R.id.MY_STOP);
-
-            tv_title_artist_.setText("");
-
-            progress_play_.setProgress(0);
-            progress_play_.setSecondaryProgress(0);
-
-            tv_play_duration_ .setText("00:00");
-            tv_play_position_.setText("00:00");
-
-            this.setVisibility(INVISIBLE);
-        }
-        return this;
-    }
-
-    void update_control_states(){
-        btn_play_.setEnabled(!player_.isPlaying());
-        btn_stop_.setEnabled(player_.isPlaying());
-    }
-
-    static String format_ms(int ms){
-        int s = ms / 1000;
-        int m = s / 60;
-        return String.format("%02d:%02d", m, s - m * 60);
-    }
-
-    public void play(media_t media) throws Exception{
-        String url = String.format("%s&creds=%s", media.get_play_link(), creds_);
-
-        if(player_ == null) {
-            player_ = new MediaPlayer();
-            player_.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        }
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            player_.setDataSource(url);
-        }
-        else
-        {
-            throw new Exception("Currently must have Ice Cream Sandwich or higher to enjoy media play");
-        }
-
-        final media_t my_media = media;
+        reset();
 
         player_.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
             @Override
@@ -133,7 +109,6 @@ public class media_player_t extends LinearLayout {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 try {
-                    Log.i(tag_, String.format("Begin playing %s", my_media.get_file_name()));
                     mp.start();
                 } catch (Exception e) {
                     Log.e(tag_, e.toString());
@@ -168,7 +143,6 @@ public class media_player_t extends LinearLayout {
 
                 return false;
             }
-
         });
 
         player_.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -178,15 +152,44 @@ public class media_player_t extends LinearLayout {
             }
         });
 
-        player_.prepareAsync();
+        return this;
+    }
+
+    void update_control_states(){
+        btn_play_.setEnabled(!player_.isPlaying());
+        btn_stop_.setEnabled(player_.isPlaying());
+    }
+
+    static String format_ms(int ms){
+        int s = ms / 1000;
+        int m = s / 60;
+        return String.format("%02d:%02d", m, s - m * 60);
+    }
+
+    public void play(media_t media) throws Exception{
+
+        String url = String.format("%s&creds=%s", media.get_play_link(), creds_);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            player_.setDataSource(url);
+        }
+        else
+        {
+            throw new Exception("Currently must have Ice Cream Sandwich or higher to enjoy media play");
+        }
+
+        Log.i(tag_, String.format("Begin playing %s", media.get_file_name()));
+
+
         this.setVisibility(View.VISIBLE);
         String edit = media.get_edit().isEmpty() ? "" : String.format(" (%s)", media.get_edit());
         tv_title_artist_.setText(String.format("%s - %s%s", media.get_title(), media.get_artist(), edit));
         update_control_states();
+
+        player_.prepareAsync();
     }
 
     public void release(){
-        this.setVisibility(View.INVISIBLE);
 
         if(player_ != null) {
             player_.release();
