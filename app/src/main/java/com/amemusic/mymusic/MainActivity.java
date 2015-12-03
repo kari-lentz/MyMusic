@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements media_player_t.er
     }
 
     public void media_error_notify(String error){
+        Log.e(tag_, error);
         make_toast(error);
     }
 

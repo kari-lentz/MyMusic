@@ -3,7 +3,6 @@ package com.amemusic.mymusic;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Base64;
@@ -13,15 +12,13 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Created by klentz on 11/22/15.
  */
-public class media_player_t extends LinearLayout {
+
+public class media_player_t extends LinearLayout implements MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener{
 
 
     interface error_notify_i{
@@ -44,9 +41,6 @@ public class media_player_t extends LinearLayout {
 
     public media_player_t(Context context, AttributeSet attrs){
         super(context, attrs);
-
-        player_ = new MediaPlayer();
-        player_.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_UNKNOWN, "Unknown");
         ht_errors_.put(MediaPlayer.MEDIA_ERROR_SERVER_DIED, "Server Died");
@@ -75,8 +69,17 @@ public class media_player_t extends LinearLayout {
 
     public void reset(){
 
-        player_.stop();
-        player_.reset();
+        if(player_ != null) {
+            if(player_.isPlaying()) {
+                player_.stop();
+            }
+            player_.reset();
+        }
+
+        if(player_ == null) {
+            player_ = new MediaPlayer();
+            player_.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        }
 
         tv_title_artist_ = (TextView) findViewById(R.id.txt_title_artist);
         progress_play_ = (ProgressBar) findViewById(R.id.progress_play);
@@ -92,65 +95,67 @@ public class media_player_t extends LinearLayout {
         tv_play_position_.setText("00:00");
 
         this.setVisibility(INVISIBLE);
+        player_.setOnBufferingUpdateListener(this);
+        player_.setOnPreparedListener(this);
+        player_.setOnErrorListener(this);
+        player_.setOnCompletionListener(this);
+
+    }
+
+    @Override
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+        progress_play_.setProgress(percent);
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        if(player_ == mp) {
+            try {
+                mp.start();
+            } catch (Exception e) {
+                Log.e(tag_, e.toString());
+            }
+
+            tv_play_duration_.setText(format_ms(player_.getDuration()));
+        }
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+
+        String category = ht_errors_.get(what);
+
+        if (category == null) {
+            category = "Unknown Category";
+        }
+
+        String info = ht_errors_.get(extra);
+
+        if (info == null) {
+            info = "Unknown origin";
+        }
+
+        String descr = String.format("category: %s info: %s", category, info);
+
+        Log.e(tag_, String.format("%s", descr));
+        if (error_notify_ != null) {
+            error_notify_.media_error_notify(String.format("Media play error %s", descr));
+        }
+
+        reset();
+
+        return true;
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        Log.i(tag_, "completed stream");
+        progress_play_.setSecondaryProgress(100);
     }
 
     media_player_t init()
     {
         reset();
-
-        player_.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
-            @Override
-            public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                progress_play_.setProgress(percent);
-            }
-        });
-
-        player_.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                try {
-                    mp.start();
-                } catch (Exception e) {
-                    Log.e(tag_, e.toString());
-                }
-
-                tv_play_duration_.setText(format_ms(player_.getDuration()));
-            }
-        });
-
-        player_.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-
-                String category = ht_errors_.get(what);
-
-                if (category == null) {
-                    category = "Unknown Category";
-                }
-
-                String info = ht_errors_.get(extra);
-
-                if (info == null) {
-                    info = "Unknown origin";
-                }
-
-                String descr = String.format("category: %s info: %s", category, info);
-
-                Log.e(tag_, String.format("%s", descr));
-                if (error_notify_ != null) {
-                    error_notify_.media_error_notify(String.format("Media play error %s", descr));
-                }
-
-                return false;
-            }
-        });
-
-        player_.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                progress_play_.setSecondaryProgress(100);
-            }
-        });
 
         return this;
     }
@@ -192,6 +197,8 @@ public class media_player_t extends LinearLayout {
     public void release(){
 
         if(player_ != null) {
+            Log.i(tag_, "performing media player release");
+
             player_.release();
             player_ = null;
         }
