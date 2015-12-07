@@ -14,9 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Created by klentz on 11/22/15.
