@@ -32,6 +32,9 @@ public class media_player2_t extends LinearLayout {
         void media_error_notify(String error);
     }
 
+    class exec_cancelled extends Exception{
+    }
+
     class play_task_t extends AsyncTask<Void, Void, Void> {
 
         String tag_ = "media_player_t.decoder_t";
@@ -40,6 +43,7 @@ public class media_player2_t extends LinearLayout {
         MediaCodec codec_ = null;
         AudioTrack audio_track_ = null;
         Exception e_;
+        boolean done_p_ = false;
 
         play_task_t(String url) {
             url_ = url;
@@ -59,7 +63,7 @@ public class media_player2_t extends LinearLayout {
             }
         }
 
-        void main_loop() throws IOException{
+        void main_loop() throws IOException, exec_cancelled{
 
             MediaExtractor extractor = new MediaExtractor();
 
@@ -175,12 +179,13 @@ public class media_player2_t extends LinearLayout {
                 }
 
                 if(isCancelled()){
-                    Log.d(tag_, "user cancel");
-                    break;
+                    Log.d(tag_, "caught user cancel");
+                    throw new exec_cancelled();
                 }
             }
 
             Log.d(tag_, "stopping...");
+            done_p_ = true;
         }
 
         @Override
@@ -196,6 +201,9 @@ public class media_player2_t extends LinearLayout {
                 finally {
                     clean_up(true);
                 }
+            }
+            catch(exec_cancelled e){
+                e_ = e;
             }
             catch (Exception e) {
                 e_ = e;
@@ -227,6 +235,10 @@ public class media_player2_t extends LinearLayout {
                     error_notify_.media_error_notify(e_.toString());
                 }
             }
+        }
+
+        public boolean is_done(){
+            return done_p_;
         }
     }
 
@@ -321,7 +333,9 @@ public class media_player2_t extends LinearLayout {
 
     public void release(){
         if(play_task_ != null){
-            play_task_.cancel(true);
+            if(!play_task_.is_done()) {
+                play_task_.cancel(true);
+            }
             play_task_ = null;
         }
     }
