@@ -1,13 +1,9 @@
 package com.amemusic.mymusic;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 
@@ -15,8 +11,6 @@ import java.net.URL;
  * Created by klentz on 12/4/15.
  */
 public class stream_getter_t implements ring_buffer_t.writer_i{
-
-    static int CAPACITY = 1024;
 
     class exec_cancelled extends Exception{
     }
@@ -29,17 +23,14 @@ public class stream_getter_t implements ring_buffer_t.writer_i{
         boolean is_cancelled();
     }
 
-    private String user_id_;
-    private String password_;
+    private String user_id_ = null;
+    private String password_ = null;
     private ring_buffer_t.writer_i writer_;
     progress_i progress_ = null;
     canceller_i canceller_ = null;
     private int total_ = 0;
-    final byte[] write_buffer_ = new byte[my_core.BUFFER_SIZE];
     ring_buffer_t buffer_;
     BufferedInputStream in_stream_ = null;
-
-    private StringBuilder temp_writer_ = new StringBuilder();;
 
     enum SPECIAL_CHARS{EOL(10);
         private int value;
@@ -48,18 +39,15 @@ public class stream_getter_t implements ring_buffer_t.writer_i{
             }
     };
 
-    public stream_getter_t (ring_buffer_t buffer, ring_buffer_t.writer_i writer, String user_id, String password){
+    public stream_getter_t (ring_buffer_t buffer){
         buffer_ = buffer;
-        writer_ = writer;
+        writer_ = this;
+    }
 
+    public stream_getter_t authorization(String user_id, String password){
         user_id_ = user_id;
         password_ = password;
 
-        temp_writer_.ensureCapacity(CAPACITY);
-    }
-
-    public stream_getter_t writer(){
-        writer_ = this;
         return this;
     }
 
@@ -74,18 +62,20 @@ public class stream_getter_t implements ring_buffer_t.writer_i{
     }
 
     public int write(byte [] buffer, int offset, int frames_per_period) throws IOException{
-        return in_stream_.read(write_buffer_, 0, my_core.BUFFER_SIZE);
+        return in_stream_.read(buffer, offset, frames_per_period);
     }
 
     public void call(URL url) throws http_exception_t, IOException, exec_cancelled, InterruptedException{
 
         total_ = 0;
 
-        Authenticator.setDefault(new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(user_id_, password_.toCharArray());
-            }
-        });
+        if(user_id_ != null && password_ != null) {
+            Authenticator.setDefault(new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(user_id_, password_.toCharArray());
+                }
+            });
+        }
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         try {

@@ -33,8 +33,8 @@ public class ring_buffer_t {
     byte[] buffer_;
     int frames_per_period_;
 
-    ring_buffer_t(byte [] buffer, int frames_per_period) {
-        buffer_ = buffer;
+    ring_buffer_t(int periods, int frames_per_period) {
+        buffer_ = new byte [periods * frames_per_period];
         frames_per_period_ = frames_per_period;
         size_ = buffer_.length;
     }
