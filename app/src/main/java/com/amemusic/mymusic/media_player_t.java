@@ -40,13 +40,13 @@ public class media_player_t extends LinearLayout {
     }
 
     class progress_t{
-        int played_;
         int buffered_;
+        int played_;
         int duration_;
 
-        progress_t(int played, int buffered, int duration){
-            played_ = played;
+        progress_t(int buffered, int played, int duration){
             buffered_ = buffered;
+            played_ = played;
             duration_ = duration;
         }
 
@@ -156,13 +156,12 @@ public class media_player_t extends LinearLayout {
             int output_counter_limit = 50;
 
             while (!saw_output_eos_p && output_counter < output_counter_limit) {
-                Log.i(tag_, "loop ");
+                //Log.d(tag_, "loop ");
                 output_counter++;
 
                 if (!saw_input_eos_p) {
                     int input_idx = codec_.dequeueInputBuffer(TIME_OUT);
-                    Log.d(tag_, " bufIndexCheck " + input_idx);
-                    if (input_idx>= 0) {
+                     if (input_idx>= 0) {
                         ByteBuffer buf = input_buffers[input_idx];
                         int ret = extractor.readSampleData(buf, 0 /* offset */);
 
@@ -173,9 +172,14 @@ public class media_player_t extends LinearLayout {
                             saw_input_eos_p = true;
                             ret = 0;
                         }
+                        else if(ret == 0){
+                            Log.d(tag_, "saw NO samples");
+                        }
                         else {
                             presentation_ts = extractor.getSampleTime();
                             buffered_ms = (Long.valueOf(presentation_ts).intValue() / 1000);
+
+                            //Log.d(tag_, "ret:" + ret + " buf:" + buffered_ms);
                         }
                         // can throw illegal state exception (???)
                         codec_.queueInputBuffer(
@@ -197,7 +201,7 @@ public class media_player_t extends LinearLayout {
                 int res = codec_.dequeueOutputBuffer(info, TIME_OUT);
                 if (res >= 0) {
 
-                    Log.d(tag_, "got frame, size " + info.size + "/" + info.presentationTimeUs);
+                    //Log.d(tag_, "got frame, size " + info.size + "/" + info.presentationTimeUs);
                     if (info.size > 0) {
                         output_counter = 0;
                     }
@@ -212,7 +216,7 @@ public class media_player_t extends LinearLayout {
                         audio_track_.write(chunk, 0, chunk.length);
                     }
 
-                    play_ms = Long.valueOf(audio_track_.getPlaybackHeadPosition()).intValue() * 100 / 441;
+                    play_ms = Long.valueOf(audio_track_.getPlaybackHeadPosition()).intValue() * 10 / 441;
 
                     codec_.releaseOutputBuffer(output_idx, false /* render */);
 
