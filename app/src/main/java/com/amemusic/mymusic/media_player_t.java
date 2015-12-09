@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
  */
 public class media_player_t extends LinearLayout {
 
-
     interface error_notify_i{
         void media_error_notify(String error);
     }
@@ -34,9 +33,48 @@ public class media_player_t extends LinearLayout {
     class exec_cancelled extends Exception{
     }
 
-    class play_task_t extends AsyncTask<Void, Void, Void> {
+    static String format_ms(int ms){
+        int s = ms / 1000;
+        int m = s / 60;
+        return String.format("%02d:%02d", m, s - m * 60);
+    }
 
-        String tag_ = "media_player_t.decoder_t";
+    class progress_t{
+        int played_;
+        int buffered_;
+        int duration_;
+
+        progress_t(int played, int buffered, int duration){
+            played_ = played;
+            buffered_ = buffered;
+            duration_ = duration;
+        }
+
+        void call(){
+            if(duration_ > 0){
+                progress_play_.setProgress(buffered_ * 100 / duration_);
+                progress_play_.setSecondaryProgress(played_ * 100 / duration_);
+
+                tv_play_position_.setText(format_ms(played_));
+            }
+        }
+    }
+
+    class begin_progress_t extends progress_t{
+        begin_progress_t(int duration){
+            super(0, 0, duration);
+        }
+
+        @Override
+        void call(){
+            super.call();
+            tv_play_duration_.setText(format_ms(duration_));
+        }
+    }
+
+    class play_task_t extends AsyncTask<Void, progress_t, Void> {
+
+        String tag_ = "media_player_t.play_task_t";
         String url_;
 
         MediaCodec codec_ = null;
@@ -62,6 +100,13 @@ public class media_player_t extends LinearLayout {
             }
         }
 
+        @Override
+        protected void onProgressUpdate(progress_t ... progress){
+            if(progress.length > 0) {
+                progress[0].call();
+            }
+        }
+
         void main_loop() throws IOException, exec_cancelled{
 
             MediaExtractor extractor = new MediaExtractor();
@@ -77,6 +122,12 @@ public class media_player_t extends LinearLayout {
             codec_.start();
             ByteBuffer [] input_buffers = codec_.getInputBuffers();
             ByteBuffer [] output_buffers = codec_.getOutputBuffers();
+
+            int duration_ms = Long.valueOf(format.getLong(MediaFormat.KEY_DURATION) / 1000).intValue();
+            int buffered_ms = 0;
+            int play_ms = 0;
+
+            publishProgress(new begin_progress_t(duration_ms));
 
             // get the sample rate to configure AudioTrack
             int sample_rate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
@@ -124,6 +175,7 @@ public class media_player_t extends LinearLayout {
                         }
                         else {
                             presentation_ts = extractor.getSampleTime();
+                            buffered_ms = (Long.valueOf(presentation_ts).intValue() / 1000);
                         }
                         // can throw illegal state exception (???)
                         codec_.queueInputBuffer(
@@ -160,6 +212,8 @@ public class media_player_t extends LinearLayout {
                         audio_track_.write(chunk, 0, chunk.length);
                     }
 
+                    play_ms = Long.valueOf(audio_track_.getPlaybackHeadPosition()).intValue() * 100 / 441;
+
                     codec_.releaseOutputBuffer(output_idx, false /* render */);
 
                     if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
@@ -181,6 +235,8 @@ public class media_player_t extends LinearLayout {
                     Log.d(tag_, "caught user cancel");
                     throw new exec_cancelled();
                 }
+
+                publishProgress(new progress_t(buffered_ms, play_ms, duration_ms));
             }
 
             Log.d(tag_, "stopping...");
@@ -266,7 +322,7 @@ public class media_player_t extends LinearLayout {
         return this;
     }
 
-    media_player_t init()
+    void reset()
     {
         tv_title_artist_ = (TextView) findViewById(R.id.txt_title_artist);
         progress_play_ = (ProgressBar) findViewById(R.id.progress_play);
@@ -284,7 +340,11 @@ public class media_player_t extends LinearLayout {
         tv_play_position_.setText("00:00");
 
         this.setVisibility(INVISIBLE);
+    }
 
+    media_player_t init()
+    {
+        reset();
         return this;
     }
 
@@ -297,12 +357,6 @@ public class media_player_t extends LinearLayout {
         return this;
     }
     void update_control_states(){
-    }
-
-    static String format_ms(int ms){
-        int s = ms / 1000;
-        int m = s / 60;
-        return String.format("%02d:%02d", m, s - m * 60);
     }
 
     public void play(media_t media) throws Exception{
@@ -335,6 +389,8 @@ public class media_player_t extends LinearLayout {
             if(!play_task_.is_done()) {
                 play_task_.cancel(true);
             }
+
+            reset();
             play_task_ = null;
         }
     }
