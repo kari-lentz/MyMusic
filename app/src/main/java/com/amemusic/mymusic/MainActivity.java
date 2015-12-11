@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements media_player_t.er
                 media_player_.play(media);
             }
             catch(Exception e){
+                Log.e(tag_, String.format("caught:%s", e.toString()));
                 make_toast(e.toString());
             }
         }
