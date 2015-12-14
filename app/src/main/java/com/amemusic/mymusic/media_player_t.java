@@ -113,29 +113,23 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
             int ret = 0;
 
-            for(int idx = 0; idx < length; ++idx){
+            media_frame_t frame = buffer[offset];
+            int input_buffer_idx = codec_.dequeueInputBuffer(TIME_OUT_);
+            if(input_buffer_idx >= 0) {
+                frame.copy_buffer(input_buffers_[input_buffer_idx]);
 
-                media_frame_t frame = buffer[offset + idx];
-                int input_buffer_idx = codec_.dequeueInputBuffer(TIME_OUT_);
-                if(input_buffer_idx >= 0) {
-                    frame.copy_buffer(input_buffers_[input_buffer_idx]);
+                codec_.queueInputBuffer(input_buffer_idx,
+                        0 /* offset */,
+                        frame.get_num_samples(),
+                        frame.get_presentation_ts(),
+                        frame.is_eos() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
 
-                    codec_.queueInputBuffer(input_buffer_idx,
-                            0 /* offset */,
-                            frame.get_num_samples(),
-                            frame.get_presentation_ts(),
-                            frame.is_eos() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
+                //Log.d(tag_, String.format("Queued idx: %d samples:%d", input_buffer_idx, frame.get_num_samples()));
 
-                    Log.d(tag_, String.format("Queued idx: %d samples:%d", idx, frame.get_num_samples()));
-
-                    ++ret;
-                    break;
-                }
-
+                ++ret;
             }
 
-            //Log.d(tag_, String.format("queued %d input buffers", ret));
-            return ret;
+             return ret;
         }
 
         void call() throws IOException, InterruptedException, exec_cancelled, eof_t{

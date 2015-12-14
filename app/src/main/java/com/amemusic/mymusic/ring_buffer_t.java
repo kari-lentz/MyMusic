@@ -113,7 +113,7 @@ public class ring_buffer_t<T> {
             lock_.unlock();
         }
 
-        samples = size_ - samples;
+        samples = size_ - max_threshold_;
 
         int ret;
         if(write_ptr_ + samples <= size_) {

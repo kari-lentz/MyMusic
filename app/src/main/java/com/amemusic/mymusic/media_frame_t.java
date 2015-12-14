@@ -40,7 +40,8 @@ public class media_frame_t {
     }
 
     void copy_buffer(ByteBuffer dest_buffer){
-        dest_buffer.put(buffer_.array(), 0, buffer_.limit());
+        dest_buffer.position(0);
+        dest_buffer.put(buffer_);
     }
 
     int get_num_samples(){
