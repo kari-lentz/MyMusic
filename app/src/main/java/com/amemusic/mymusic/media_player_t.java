@@ -79,6 +79,8 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         ByteBuffer [] input_buffers_;
         AudioTrack audio_track_ = null;
 
+        boolean threshold_p_ = false;
+
         Exception e_;
         boolean done_p_ = false;
         final long TIME_OUT_ = 10000;
@@ -114,6 +116,14 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             int ret = 0;
 
             media_frame_t frame = buffer[offset];
+
+            if(!threshold_p_)
+            {
+                if (buffer_.get_samples_available() < buffer_.get_frames_per_period()) {
+                    threshold_p_ = true;
+                    return 0;
+                }
+            }
 
             int input_buffer_idx = codec_.dequeueInputBuffer(TIME_OUT_);
             if(input_buffer_idx >= 0) {
@@ -169,6 +179,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
             byte [] chunk = new byte[2048];
+            threshold_p_ = false;
 
             for(;;) {
 

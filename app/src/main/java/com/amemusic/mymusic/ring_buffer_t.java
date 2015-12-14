@@ -52,7 +52,7 @@ public class ring_buffer_t<T> {
         }
     }
 
-    private int get_samples_available(){
+    private int get_private_samples_available(){
         if(empty_p_){
             return 0;
         }
@@ -61,13 +61,27 @@ public class ring_buffer_t<T> {
         }
     }
 
+    public int get_samples_available(){
+        lock_.lock();
+        try{
+            return get_private_samples_available();
+        }
+        finally{
+            lock_.unlock();
+        }
+    }
+
+    public int get_frames_per_period(){
+        return frames_per_period_ ;
+    }
+
     int read(reader_i<T> reader) throws InterruptedException, IOException, eof_t{
 
         int samples;
 
         lock_.lock();
         try {
-            for(samples = get_samples_available(); samples < min_threshold_; samples=get_samples_available()){
+            for(samples = get_private_samples_available(); samples < min_threshold_; samples=get_private_samples_available()){
                 empty_.await();
             }
         }
@@ -105,7 +119,7 @@ public class ring_buffer_t<T> {
 
         lock_.lock();
         try {
-            for(samples = get_samples_available(); samples > max_threshold_; samples=get_samples_available()){
+            for(samples = get_private_samples_available(); samples > max_threshold_; samples=get_private_samples_available()){
                 full_.await();
             }
         }
