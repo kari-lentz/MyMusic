@@ -114,17 +114,18 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             int ret = 0;
 
             media_frame_t frame = buffer[offset];
+
             int input_buffer_idx = codec_.dequeueInputBuffer(TIME_OUT_);
             if(input_buffer_idx >= 0) {
                 frame.copy_buffer(input_buffers_[input_buffer_idx]);
 
                 codec_.queueInputBuffer(input_buffer_idx,
-                        0 /* offset */,
+                        0, //offset
                         frame.get_num_samples(),
                         frame.get_presentation_ts(),
                         frame.is_eos() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
 
-                //Log.d(tag_, String.format("Queued idx: %d samples:%d", input_buffer_idx, frame.get_num_samples()));
+                //Log.d(tag_, String.format("Queued idx:%d ts:%dms samples:%d", input_buffer_idx, frame.get_presentation_ts()/1000, frame.get_num_samples()));
 
                 ++ret;
             }
@@ -167,6 +168,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             audio_track_.play();
 
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+            byte [] chunk = new byte[2048];
 
             for(;;) {
 
@@ -176,18 +178,21 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                 if (res >= 0) {
 
                     int output_buffer_idx = res;
+
                     ByteBuffer buf = output_buffers[output_buffer_idx];
 
-                    final byte[] chunk = new byte[info.size];
+                    if(info.size > chunk.length) {
+                        chunk = new byte[info.size];
+                    }
                     buf.get(chunk);
                     buf.clear();
-                    if (chunk.length > 0) {
-                        audio_track_.write(chunk, 0, chunk.length);
+                    if(info.size> 0) {
+                        audio_track_.write(chunk, 0, info.size);
                     }
 
                     play_ms = Long.valueOf(audio_track_.getPlaybackHeadPosition()).intValue() * 10 / 441;
 
-                    codec_.releaseOutputBuffer(output_buffer_idx, false /* render */);
+                    codec_.releaseOutputBuffer(output_buffer_idx, false);
                 }
                 else if (res == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                     output_buffers = codec_.getOutputBuffers();
@@ -213,7 +218,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                 }
             }
 
-            Log.d(tag_, "stopping...");
+            //Log.d(tag_, "stopping...");
         }
 
         @Override
