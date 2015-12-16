@@ -132,7 +132,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                 codec_.queueInputBuffer(input_buffer_idx,
                         0, //offset
                         frame.get_num_samples(),
-                        frame.get_presentation_ts(),
+                        0,
                         frame.is_eos() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
 
                 //Log.d(tag_, String.format("Queued idx:%d ts:%dms samples:%d", input_buffer_idx, frame.get_presentation_ts()/1000, frame.get_num_samples()));
@@ -148,7 +148,8 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             String mime = format_.getString(MediaFormat.KEY_MIME);
             Log.d(tag_, String.format("started play for mime: %s", mime));
 
-            int duration_ms = Long.valueOf(format_.getLong(MediaFormat.KEY_DURATION) / 1000).intValue();
+            int duration_bytes = 4 * Long.valueOf(format_.getLong(MediaFormat.KEY_DURATION) * 441 / 10000).intValue();
+            int duration_ms = duration_bytes / 4 * 10 / 441;
             publishProgress(new begin_play_progress_t(duration_ms));
 
             // the actual decoder
@@ -157,8 +158,6 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             codec_.start();
             input_buffers_ = codec_.getInputBuffers();
             ByteBuffer [] output_buffers = codec_.getOutputBuffers();
-
-            int play_ms = 0;
 
             // get the sample rate to configure AudioTrack
             int sample_rate = format_.getInteger(MediaFormat.KEY_SAMPLE_RATE);
@@ -181,7 +180,10 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             byte [] chunk = new byte[2048];
             threshold_p_ = false;
 
-            for(;;) {
+            int play_ms = 0;
+            int played_bytes = 0;
+            boolean done_p = false;
+            do {
 
                 buffer_.read(this);
 
@@ -198,7 +200,22 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                     buf.get(chunk);
                     buf.clear();
                     if(info.size> 0) {
-                        audio_track_.write(chunk, 0, info.size);
+                        int remaining = (duration_bytes - played_bytes);
+                        int size;
+
+                        if(remaining > info.size){
+                            size = info.size;
+                        }
+                        else {
+                            done_p = true;
+                            Log.d(tag_, String.format("SAW END:%d bytes", remaining));
+                            size = remaining;
+                        }
+
+                        if(size > 0){
+                            audio_track_.write(chunk, 0, size);
+                            played_bytes += size;
+                        }
                     }
 
                     play_ms = Long.valueOf(audio_track_.getPlaybackHeadPosition()).intValue() * 10 / 441;
@@ -227,9 +244,9 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                     Log.d(tag_, "saw output EOS.");
                     break;
                 }
-            }
+            } while(!done_p);
 
-            //Log.d(tag_, "stopping...");
+            Log.d(tag_, "stopping...");
         }
 
         @Override
