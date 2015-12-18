@@ -5,7 +5,6 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaCodec;
-import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -18,7 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.ByteBuffer;
 
 /**
@@ -131,11 +133,11 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
                 codec_.queueInputBuffer(input_buffer_idx,
                         0, //offset
-                        frame.get_num_samples(),
+                        frame.get_size(),
                         0,
-                        frame.is_eos() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
+                        frame.is_eof() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
 
-                //Log.d(tag_, String.format("Queued idx:%d ts:%dms samples:%d", input_buffer_idx, frame.get_presentation_ts()/1000, frame.get_num_samples()));
+                Log.d(tag_, String.format("Queued idx:%d samples:%d:eof:%b", input_buffer_idx, frame.get_size(), frame.is_eof()));
 
                 ++ret;
             }
@@ -333,28 +335,34 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         }
     }
 
-    class comm_task_t extends AsyncTask<Void, comm_progress_t, Void> implements ring_buffer_t.writer_i<media_frame_t>{
+    class comm_task_t extends AsyncTask<Void, comm_progress_t, Void> implements mp3_iter_t.reader_i, ring_buffer_t.writer_i<media_frame_t>{
 
         String url_;
-        MediaExtractor extractor_ = null;
+
+        HttpURLConnection connection_ = null;
+        BufferedInputStream in_stream_ = null;
+        mp3_iter_t mp3_iter_ = null;
+        boolean eof_p_ = false;
+        int downloaded_bytes_ = 0;
         int duration_ms_ = 0;
-        int max_buffer_size_;
+        int content_length_ = 0;
+        int bit_rate_ = 0;
 
         String tag_ = "media_player_t.comm_task_t";
 
         ring_buffer_t<media_frame_t> buffer_;
         private ring_buffer_t.writer_i<media_frame_t> writer_;
+        play_task_t play_task_ = null;
 
         String creds_ = null;
         Exception e_ = null;
 
-        media_frame_t last_frame_ = null;
         boolean done_p_ = false;
 
         comm_task_t (String url, ring_buffer_t<media_frame_t> buffer){
 
             url_ = url;
-            extractor_ = new MediaExtractor();
+            mp3_iter_ = new mp3_iter_t(this);
 
             buffer_ = buffer;
             writer_ = this;
@@ -371,38 +379,50 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             return this;
         }
 
-        public play_task_t play() throws Exception{
+        public int read(byte dest[], int offset, int length) throws IOException{
+            return in_stream_.read(dest, offset, length);
+        }
+
+        public void release(){
+
+            if(in_stream_ != null){
+                in_stream_ = null;
+            }
+
+            if(connection_ != null){
+                connection_.disconnect();
+                connection_ = null;
+            }
+
+            if(play_task_ != null){
+                if(!play_task_.is_done()) {
+                    play_task_.cancel(true);
+                }
+
+                play_task_ = null;
+            }
+        }
+
+        private void connect() throws Exception{
 
             String url_real = creds_ != null ? String.format("%s&creds=%s", url_, creds_) : url_;
             Log.i(tag_, String.format("Connecting %s", url_real));
-            extractor_.setDataSource(url_real);
 
-            MediaFormat format = extractor_.getTrackFormat(0);
+            URL url = new URL(url_real);
+            connection_ = (HttpURLConnection) url.openConnection();
 
-            if(format == null){
-                throw new Exception(String.format("No track format for:%s", url_real));
+            connection_.setRequestMethod("GET");
+            connection_.connect();
+
+            int code = connection_.getResponseCode();
+
+            if (!(code == 200 || (code >= 300 && code <= 304))) {
+                throw new http_exception_t(code, connection_.getResponseMessage());
             }
 
-            String mime =  format.getString(MediaFormat.KEY_MIME);
+            in_stream_ = new BufferedInputStream(connection_.getInputStream());
 
-            if(mime.equals("audio/mpeg")){
-                max_buffer_size_ = 1045;
-            }
-            else {
-                throw new Exception(String.format("unknown mime: %s", mime));
-            }
-
-            duration_ms_ = Long.valueOf(format.getLong(MediaFormat.KEY_DURATION) / 1000).intValue();
-
-            //select this track to feed into buffer
-            extractor_.selectTrack(0);
-
-            Log.d(tag_, String.format("selected track of duration %dms", duration_ms_));
-
-            play_task_t ret = new play_task_t(format, buffer_);
-            ret.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-            return ret;
+            mp3_iter_ = new mp3_iter_t(this);
         }
 
         @Override
@@ -412,64 +432,96 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             }
         }
 
+        long get_presentation_ts(int num_bytes){
+            return Double.valueOf(((double) num_bytes * 8) / ((double) bit_rate_) * 1000000.0).longValue();
+        }
+
+        private play_task_t start_play() throws Exception{
+
+            eof_p_ = false;
+            downloaded_bytes_ = 0;
+            connect();
+
+            if(mp3_iter_.next() == null){
+                throw new parse_exception_t("no mp3 frames");
+            }
+
+            bit_rate_ = mp3_iter_.get_bit_rate();
+            int sample_rate = mp3_iter_.get_sample_rate();
+            int num_channels = mp3_iter_.get_num_channels();
+            content_length_ = connection_.getContentLength();
+            long duration = get_presentation_ts(content_length_);
+            duration_ms_ = Long.valueOf(duration / 1000).intValue();
+            int max_buffer_size = Double.valueOf(((double) bit_rate_) / ((double)sample_rate) * 144.0 + 0.5).intValue();
+            Log.d(tag_, String.format("mp3 format specs:%d:%d:%d:%s", sample_rate, bit_rate_, num_channels, max_buffer_size));
+            MediaFormat format = MediaFormat.createAudioFormat("audio/mpeg", sample_rate, num_channels);
+            //format.setInteger(MediaFormat.KEY_BIT_RATE, bit_rate_);
+            //format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, max_buffer_size);
+            format.setLong(MediaFormat.KEY_DURATION, duration);
+
+            //Log.d(tag_, String.format("content-length:%d %s", content_length_, mp3_iter_.dump()));
+
+            play_task_ = new play_task_t(format, buffer_);
+            play_task_.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            return play_task_;
+        }
+
         public int write(media_frame_t [] buffer, int offset, int length) throws IOException, eof_t{
 
             int ret = 0;
 
-            for(int idx = 0; idx < length; ++idx) {
+            for(int idx = 0; !eof_p_ && idx < length; ++idx) {
 
                 media_frame_t frame = buffer[offset + idx];
                 if(frame == null){
-                    buffer[offset + idx] = new media_frame_t(max_buffer_size_);
+                    buffer[offset + idx] = new media_frame_t();
                     frame = buffer[offset + idx];
                 }
 
-                frame.fill(extractor_);
-                last_frame_ = frame;
+                frame.fill(mp3_iter_);
 
+                Log.d(tag_, mp3_iter_.dump());
+
+                downloaded_bytes_ += frame.get_size();
                 ++ret;
 
-                if(frame.is_eos()) {
-                    break;
+                try {
+                    if(mp3_iter_.next() == null){
+                        frame.set_eof();
+                        eof_p_ = true;
+                    }
+                }
+                catch(Exception e){
+                    e_ = e;
+                    frame.set_eof();
+                    eof_p_ = true;
                 }
             }
 
             //Log.d(tag_, String.format("buffered %d samples", ret));
-
             return ret;
         }
 
-        public void call() throws http_exception_t, IOException, exec_cancelled, InterruptedException, eof_t{
+        public void call() throws Exception{
 
             done_p_ = false;
             Log.d(tag_, String.format("commenced buffering"));
 
+            start_play();
             publishProgress(new begin_comm_progress_t(duration_ms_));
 
             do{
                 buffer_.write(this);
-
-                if(done_p_){
-                    break;
-                }
 
                 if(isCancelled()) {
                     Log.d(tag_, "caught user cancel");
                     throw new exec_cancelled();
                 }
 
-                long presentation_ts = extractor_.getSampleTime();
-                int buffered_ms = (Long.valueOf(presentation_ts).intValue() / 1000);
-                //Log.d(tag_, String.format("Buffered=%d / Duration=%d", buffered_ms, duration_ms_));
-                publishProgress(new comm_progress_t(buffered_ms, duration_ms_));
-            }while((last_frame_ != null && !last_frame_.is_eos()));
-
-            Log.d(tag_, "Done!");
-        }
-
-        private void clean_up(){
-            extractor_.release();
-        }
+                publishProgress(new comm_progress_t(Long.valueOf(get_presentation_ts(downloaded_bytes_) / 1000).intValue(), duration_ms_));
+            }while(!eof_p_);
+         }
 
         @Override
         protected Void doInBackground(Void... values) {
@@ -482,7 +534,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                     call();
                 }
                 finally {
-                    clean_up();
+                    release();
                 }
             }
             catch(exec_cancelled e){
@@ -499,11 +551,14 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             done_p_ = true;
 
             if (e_ != null) {
-                e_.printStackTrace();
                 Log.e(tag_, String.format("caught:%s", e_.toString()));
                 if(error_notify_ != null) {
                     error_notify_.media_error_notify(e_.toString());
                 }
+                e_.printStackTrace();
+            }
+            else {
+                Log.d(tag_, "Done Buffering!");
             }
 
             comm_task_ = null;
@@ -524,7 +579,6 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
     Button btn_stop_ = null;
 
     comm_task_t comm_task_ = null;
-    play_task_t play_task_ = null;
     String user_id_ = null;
     String password_ = null;
 
@@ -585,7 +639,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
     public void play(media_t media) throws Exception{
 
-        if(comm_task_ != null || play_task_ != null){
+        if(comm_task_ != null){
             if(error_notify_ != null) {
                 error_notify_.media_error_notify("Already playing media ... please stop first");
             }
@@ -599,7 +653,6 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             comm_task_ = new comm_task_t(media.get_play_link(), new ring_buffer_t<media_frame_t>(this, 64,16)).authorization(user_id_, password_);
-            play_task_ = comm_task_.play();
             comm_task_.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         else
@@ -616,14 +669,6 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             }
 
             comm_task_ = null;
-        }
-
-        if(play_task_ != null){
-            if(!play_task_.is_done()) {
-                play_task_.cancel(true);
-            }
-
-            play_task_ = null;
         }
 
         reset();

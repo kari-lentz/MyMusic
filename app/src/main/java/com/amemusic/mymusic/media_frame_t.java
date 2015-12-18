@@ -9,34 +9,27 @@ import java.nio.ByteBuffer;
  */
 public class media_frame_t {
 
-    long presentation_ts_;
+    boolean eof_p_ = false;
     ByteBuffer buffer_;
-    boolean eos_p_;
 
-    media_frame_t(int max_buffer_size){
-        presentation_ts_ = 0;
-        buffer_ = ByteBuffer.allocate(max_buffer_size);
-         eos_p_ = false;
+    media_frame_t(){
+        buffer_ = null;
     }
 
-    void fill(MediaExtractor extractor) throws eof_t{
-        eos_p_ = false;
-        buffer_.clear();
-        int ret = extractor.readSampleData(buffer_, 0 /* offset */);
+    void fill(mp3_iter_t iter) throws eof_t{
+        eof_p_ = false;
 
-        if(ret < 0) {
-            buffer_.limit(0);
-            eos_p_ = true;
-        }
-        else {
-            buffer_.limit(ret);
+        int frame_size = iter.get_frame_size();
+
+        if(buffer_ == null){
+            buffer_ = ByteBuffer.allocate(frame_size);
         }
 
-        presentation_ts_ = extractor.getSampleTime();
-
-        if(extractor.advance()){
-            eos_p_ = false;
+        if(buffer_.capacity() < frame_size){
+            buffer_ = ByteBuffer.allocate(frame_size);
         }
+        buffer_.limit(frame_size);
+        buffer_.put(iter.get_frame_bytes(), 0, frame_size);
     }
 
     void copy_buffer(ByteBuffer dest_buffer){
@@ -44,15 +37,15 @@ public class media_frame_t {
         dest_buffer.put(buffer_);
     }
 
-    int get_num_samples(){
+    boolean is_eof(){
+        return eof_p_;
+    }
+
+    void set_eof(){
+        eof_p_ = true;
+    }
+
+    int get_size(){
         return buffer_.limit();
-    }
-
-    long get_presentation_ts(){
-        return presentation_ts_;
-    }
-
-    boolean is_eos(){
-        return eos_p_;
     }
 }
