@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -137,7 +138,11 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                         0,
                         frame.is_eof() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
 
-                Log.d(tag_, String.format("Queued idx:%d samples:%d:eof:%b", input_buffer_idx, frame.get_size(), frame.is_eof()));
+                if(frame.is_eof()){
+                    Log.d(tag_,"SAW MUSIC EOF");
+                }
+
+                //Log.d(tag_, String.format("Queued idx:%d samples:%d:eof:%b", input_buffer_idx, frame.get_size(), frame.is_eof()));
 
                 ++ret;
             }
@@ -380,7 +385,31 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         }
 
         public int read(byte dest[], int offset, int length) throws IOException{
-            return in_stream_.read(dest, offset, length);
+            int ret = 0;
+            int remaining = length;
+            int total_bytes = 0;
+            do{
+                ret = in_stream_.read(dest, offset + total_bytes, remaining);
+                if(ret < 0){
+                    return -1;
+                }
+                total_bytes += ret;
+                remaining -= ret;
+            }while(remaining > 0);
+
+            return total_bytes;
+        }
+
+        public void wait_for_play(){
+
+            if(!isCancelled()) {
+                try {
+                    play_task_.get();
+                    play_task_ = null;
+                } catch (Exception e) {
+                    Log.e(tag_, String.format("waiting for player, caught:%s", e));
+                }
+            }
         }
 
         public void release(){
@@ -436,7 +465,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             return Double.valueOf(((double) num_bytes * 8) / ((double) bit_rate_) * 1000000.0).longValue();
         }
 
-        private play_task_t start_play() throws Exception{
+        private play_task_t run_play() throws Exception{
 
             eof_p_ = false;
             downloaded_bytes_ = 0;
@@ -481,7 +510,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
                 frame.fill(mp3_iter_);
 
-                Log.d(tag_, mp3_iter_.dump());
+                //Log.d(tag_, mp3_iter_.dump());
 
                 downloaded_bytes_ += frame.get_size();
                 ++ret;
@@ -508,7 +537,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             done_p_ = false;
             Log.d(tag_, String.format("commenced buffering"));
 
-            start_play();
+            run_play();
             publishProgress(new begin_comm_progress_t(duration_ms_));
 
             do{
@@ -521,6 +550,8 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
                 publishProgress(new comm_progress_t(Long.valueOf(get_presentation_ts(downloaded_bytes_) / 1000).intValue(), duration_ms_));
             }while(!eof_p_);
+
+            wait_for_play();
          }
 
         @Override
@@ -562,6 +593,21 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             }
 
             comm_task_ = null;
+        }
+
+        void handle_cancel(){
+        }
+
+        @Override
+        protected void onCancelled(Void v) {
+            Log.i(tag_, "handling cancel post-api 11 style");
+            handle_cancel();
+        }
+
+        @Override
+        protected void onCancelled() {
+            Log.i(tag_, "handling cancel post-api 3 style");
+            handle_cancel();
         }
 
         public boolean is_done(){
@@ -664,6 +710,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
     public void release(){
 
         if(comm_task_ != null){
+
             if(!comm_task_.is_done()) {
                 comm_task_.cancel(true);
             }

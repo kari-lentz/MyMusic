@@ -129,6 +129,10 @@ public class mp3_iter_t {
         reader_ = reader;
     }
 
+    mp3_iter_t(byte[] frame_bytes){
+       frame_bytes_ = frame_bytes;
+    }
+
     int get_num_channels(){
         return extract_num_channels(extract_frame_header());
     }
@@ -159,7 +163,7 @@ public class mp3_iter_t {
 
         int ret_bytes = reader_.read(frame_bytes_, 0, 4);
 
-        if(ret_bytes < -1) {
+        if(ret_bytes <= -1) {
             ret =  null;
         }
         else if(ret_bytes < 4){
@@ -182,7 +186,7 @@ public class mp3_iter_t {
                 int remaining = size - 4;
                 ret_bytes = reader_.read(frame_bytes_, 4, remaining);
                 if (ret_bytes < remaining) {
-                    throw new parse_fault_t("incomplete frame data");
+                    throw new parse_fault_t(String.format("incomplete frame data:expected %d bytes:got %d bytes", remaining, ret_bytes));
                 }
             } else {
                 throw new parse_fault_t("frame needs to be bigger than 4 bytes");
