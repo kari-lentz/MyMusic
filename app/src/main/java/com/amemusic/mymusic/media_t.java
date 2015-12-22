@@ -25,6 +25,7 @@ public class media_t extends Object{
     private int total_credits_;
     private String media_type_;
     private states_t queue_state_ = states_t.PENDING;
+    private int run_;
 
     private Hashtable<String, Object> data_;
 
@@ -147,6 +148,14 @@ public class media_t extends Object{
         }
 
         return ret;
+    }
+
+    int get_run(){
+        return run_;
+    }
+
+    void set_run(int run){
+        run_ = run;
     }
 
     class can_t {

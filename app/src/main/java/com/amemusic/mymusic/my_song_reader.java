@@ -37,6 +37,8 @@ public class my_song_reader {
         ret.set_process_date(helper.try_date("PROCESS_DATE", "yyyyy-MM-dd hh:mm:ss"));
         ret.set_credits_used(helper.try_int("CREDITS_USED"));
         ret.set_total_credits(helper.try_int("TOTAL_CREDITS"));
+        int raw_run = Double.valueOf(helper.try_double("RUN")).intValue();
+        ret.set_run(raw_run / 100 * 60 + (raw_run % 100));
 
         Iterator<String> it = row.keys();
 

@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements media_player_t.er
 
         if (media != null) {
             try {
-                media_player_.play(media);
+                media_player_.play(media, 0);
             }
             catch(Exception e){
                 Log.e(tag_, String.format("caught:%s", e.toString()));

@@ -29,7 +29,7 @@
             android:progressDrawable="@drawable/player_progress_bar"
             android:minHeight="16dip"
             android:maxHeight="16dip"
-             android:progress="75"
+            android:progress="75"
             android:secondaryProgress="50"
             android:layout_gravity="center" />
 
