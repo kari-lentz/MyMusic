@@ -20,10 +20,12 @@ import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by klentz on 11/22/15.
@@ -72,6 +74,47 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         }
     }
 
+    class pauser_t{
+
+        private final Lock lock_ = new ReentrantLock();
+        private Condition cond_  = lock_.newCondition();
+        private boolean paused_p_= false;
+
+        pauser_t(){
+        }
+
+        void pass(){
+
+            lock_.lock();
+            try {
+                if(paused_p_){
+                    try {
+                        cond_.await();
+                    }
+                    catch(InterruptedException e){
+                        Log.d(tag_, String.format("in pauser, caught:%s", e.toString()));
+                    }
+                }
+            }
+            finally {
+                lock_.unlock();
+            }
+        }
+
+        void set(boolean paused_p){
+            lock_.lock();
+            try {
+                paused_p_ = paused_p;
+                if(!paused_p) {
+                    cond_.signalAll();
+                }
+            }
+            finally {
+                lock_.unlock();
+            }
+        }
+    }
+
     class play_task_t extends AsyncTask<Void, play_progress_t, Void> implements ring_buffer_t.reader_i<media_frame_t> {
 
         String tag_ = "media_player_t.play_task_t";
@@ -79,6 +122,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         MediaFormat format_;
         ring_buffer_t<media_frame_t> buffer_;
         int seek_;
+        pauser_t pauser_;
 
         MediaCodec codec_ = null;
         ByteBuffer [] input_buffers_;
@@ -90,10 +134,11 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         boolean done_p_ = false;
         final long TIME_OUT_ = 10000;
 
-        play_task_t(MediaFormat format, ring_buffer_t<media_frame_t> buffer, int seek) {
+        play_task_t(MediaFormat format, ring_buffer_t<media_frame_t> buffer, int seek, pauser_t pauser) {
             format_ = format;
             buffer_ = buffer;
             seek_ = seek;
+            pauser_ = pauser;
         }
 
         private void clean_up(Boolean release)
@@ -150,6 +195,8 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
                 ++ret;
             }
+
+            pauser_.pass();
 
              return ret;
         }
@@ -365,6 +412,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
         ring_buffer_t<media_frame_t> buffer_;
         int seek_;
+        pauser_t pauser_;
 
         private ring_buffer_t.writer_i<media_frame_t> writer_;
         play_task_t play_task_ = null;
@@ -374,7 +422,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
         boolean done_p_ = false;
 
-        comm_task_t (String url, ring_buffer_t<media_frame_t> buffer, int seek){
+        comm_task_t (String url, ring_buffer_t<media_frame_t> buffer, int seek, pauser_t pauser){
 
             url_ = url;
             buffer_ = buffer;
@@ -382,6 +430,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
             mp3_iter_ = new mp3_iter_t(this);
             writer_ = this;
+            pauser_ = pauser;
         }
 
         public comm_task_t authorization(String user_id, String password){
@@ -501,7 +550,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
             //Log.d(tag_, String.format("content-length:%d %s", content_length_, mp3_iter_.dump()));
 
-            play_task_ = new play_task_t(format, buffer_, seek_);
+            play_task_ = new play_task_t(format, buffer_, seek_, pauser_);
             play_task_.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
             return play_task_;
@@ -520,7 +569,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
                 }
 
                 frame.fill(mp3_iter_);
-
+                pauser_.pass();
                 //Log.d(tag_, mp3_iter_.dump());
 
                 downloaded_bytes_ += frame.get_size();
@@ -633,7 +682,10 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
     TextView tv_play_position_ = null;
     TextView tv_play_duration_ = null;
     Button btn_play_ = null;
+    Button btn_pause_ = null;
     Button btn_stop_ = null;
+
+    pauser_t pauser_;
 
     comm_task_t comm_task_ = null;
     String user_id_ = null;
@@ -659,8 +711,35 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         progress_play_ = (ProgressBar) findViewById(R.id.progress_play);
         tv_play_position_ = (TextView) findViewById(R.id.txt_play_position);
         tv_play_duration_ = (TextView) findViewById(R.id.txt_play_duration);
+
         btn_play_ = (Button) findViewById(R.id.MY_PLAY);
+
+        btn_play_.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(tag_, String.format("CAUGHT PLAY"));
+                pauser_.set(false);
+            }
+        });
+
+        btn_pause_ = (Button) findViewById(R.id.MY_PAUSE);
+
+        btn_pause_.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(tag_, String.format("CAUGHT PAUSE"));
+                pauser_.set(true);
+            }
+        });
+
         btn_stop_ = (Button) findViewById(R.id.MY_STOP);
+
+        btn_stop_.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(tag_, String.format("CAUGHT STOP"));
+            }
+        });
 
         tv_title_artist_.setText("");
 
@@ -672,7 +751,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
-                        release();
+                        release();       btn_play_ = (Button) findViewById(R.id.MY_PLAY);
                         int seek = Float.valueOf(100 * event.getX() / v.getWidth()).intValue();
                         Log.d(tag_, String.format("TRY SEEK:%f/%d -> seek %d", event.getX(), v.getWidth(), seek));
                         try {
@@ -695,6 +774,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
     media_player_t init()
     {
+        pauser_ = new pauser_t();
         reset();
         return this;
     }
@@ -731,7 +811,7 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             int seek = media.get_run() * seek_percent / 100;
-            comm_task_ = new comm_task_t(media.get_play_link(), new ring_buffer_t<media_frame_t>(this, 64,16), seek).authorization(user_id_, password_);
+            comm_task_ = new comm_task_t(media.get_play_link(), new ring_buffer_t<media_frame_t>(this, 64,16), seek, pauser_).authorization(user_id_, password_);
             comm_task_.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         else

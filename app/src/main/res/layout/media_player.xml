@@ -66,6 +66,14 @@
             android:minHeight="32dp"
             android:minWidth="32dp" />
 
+        <com.amemusic.mymusic.pause_button_t
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/MY_PAUSE"
+            android:maxWidth="32dp"
+            android:minHeight="32dp"
+            android:minWidth="32dp" />
+
         <com.amemusic.mymusic.stop_button_t
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
