@@ -717,8 +717,16 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         btn_play_.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(tag_, String.format("CAUGHT PLAY"));
-                pauser_.set(false);
+                try {
+                    Log.d(tag_, String.format("CAUGHT PLAY"));
+                    pauser_.set(false);
+                    if (comm_task_ == null) {
+                        play(last_media_, 0);
+                    }
+                }
+                catch(Exception e){
+                    Log.d(tag_, String.format(""));
+                }
             }
         });
 
@@ -737,7 +745,14 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         btn_stop_.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(tag_, String.format("CAUGHT STOP"));
+                Log.d(tag_, String.format("CAUGHT stop"));
+                release();
+                try {
+                    home_position(last_media_, 0, false);
+                }
+                catch(Exception e){
+                    Log.d(tag_, String.format("WHEN topping, caught %s", e.toString()));
+                }
             }
         });
 
@@ -795,9 +810,9 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         return new media_frame_t[size];
     }
 
-    public void play(media_t media, int seek_percent) throws Exception{
+    public void home_position(media_t media, int seek_percent, boolean play_p) throws Exception{
 
-        if(comm_task_ != null){
+        if(play_p && comm_task_ != null){
             if(error_notify_ != null) {
                 error_notify_.media_error_notify("Already playing media ... please stop first");
             }
@@ -810,9 +825,11 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         update_control_states();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            int seek = media.get_run() * seek_percent / 100;
-            comm_task_ = new comm_task_t(media.get_play_link(), new ring_buffer_t<media_frame_t>(this, 64,16), seek, pauser_).authorization(user_id_, password_);
-            comm_task_.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            if(play_p) {
+                int seek = media.get_run() * seek_percent / 100;
+                comm_task_ = new comm_task_t(media.get_play_link(), new ring_buffer_t<media_frame_t>(this, 64, 16), seek, pauser_).authorization(user_id_, password_);
+                comm_task_.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         }
         else
         {
@@ -820,6 +837,10 @@ public class media_player_t extends LinearLayout implements ring_buffer_t.factor
         }
 
         last_media_ = media;
+    }
+
+    public void play(media_t media, int seek_percent) throws Exception {
+        home_position(media, seek_percent, true);
     }
 
     public void release(){
